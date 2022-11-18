@@ -12,12 +12,20 @@ A digital combat simulator oriented flight and combat stats system powered by ta
 
 [] Create default SQLite database and git ignore `main_db.sqlite3` to retain clean database reference
 
+---
+
 ### Tooling
 [] Build tool for automating tacview file csv exports
 
+---
+
 ### User interface for data management (importing and other)
 
+---
+
 ### Visualization
+
+---
 
 ## Useful links
 [SQL Lite Studio](https://sqlitestudio.pl/) - Great for dealing with the SQL Lite database
