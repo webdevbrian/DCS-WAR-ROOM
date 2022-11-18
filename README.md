@@ -6,9 +6,11 @@ A digital combat simulator oriented flight and combat stats system powered by ta
 ### General tasks
 [X] Build base repository
 
-[X] Build base SQLLite database for data imports and management
+[X] Build base SQLite database for data imports and management
 
-[] 
+[X] Run test imports of tacview exports
+
+[] Create default SQLite database and git ignore `main_db.sqlite3` to retain clean database reference
 
 ### Tooling
 [] Build tool for automating tacview file csv exports
