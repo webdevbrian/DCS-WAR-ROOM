@@ -1,5 +1,5 @@
 # DCS-WAR-ROOM
-A digital combat simulator oriented flight and combat stats system powered by tacview 
+A digital combat simulator oriented flight and combat stats system powered by tacview
 
 ## Specific TODO progress
 
@@ -20,6 +20,10 @@ A digital combat simulator oriented flight and combat stats system powered by ta
 ---
 
 ### User interface for data management (importing and other)
+
+[](Create frame work that utilizes bootstrap or otherwise in a HTML / web interface for interaction)
+
+[](Create interface for database associations for pilot duplication)
 
 ---
 
