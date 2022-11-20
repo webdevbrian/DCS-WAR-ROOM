@@ -5,10 +5,21 @@
   "repository": "webdevbrian/DCS-WAR-ROOM",
   "main": "app.js",
   "scripts": {
-    "start": "electron app.js"
+    "start": "electron-forge start",
+    "startforge": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "license": "ISC",
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.3",
+    "@electron-forge/maker-deb": "^6.0.3",
+    "@electron-forge/maker-rpm": "^6.0.3",
+    "@electron-forge/maker-squirrel": "^6.0.3",
+    "@electron-forge/maker-zip": "^6.0.3",
     "electron": "^3.0.2"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
   }
 }
