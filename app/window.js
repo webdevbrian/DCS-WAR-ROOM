@@ -3,6 +3,25 @@ const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const exec = require('child_process').exec;
 const rootPath = require('electron-root-path').rootPath;
+const initSqlJs = require('sql.js');
+
+const dbFileBuffer = fs.readFileSync(rootPath + "/dwr.sqlite3");
+
+initSqlJs().then(function (SQL) {
+  const db = new SQL.Database(dbFileBuffer);
+  const res = db.exec("SELECT * FROM flightlogs");
+
+  console.log(res);
+  db.close();
+});
+
+initSqlJs().then(function (SQL) {
+  const db = new SQL.Database(dbFileBuffer);
+  const res = db.exec("SELECT * FROM flightlogimports");
+
+  console.log(res);
+  db.close();
+});
 
 ipcRenderer.on('open-dialog-paths-selected', (event, arg)=> {
   dialog.handler.outputSelectedPathsFromOpenDialog(arg);
