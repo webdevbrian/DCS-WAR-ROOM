@@ -14,8 +14,9 @@ ipcMain.on('show-open-dialog', (event, arg)=> {
     //defaultPath: '/',
     buttonLabel: 'Import Tacview',
     filters: [
-      { name: 'CSV', extensions: ['csv'] },
-      { name: 'ACMI', extensions: ['acmi'] }
+      { name: 'ACMI', extensions: ['acmi'] },
+      { name: 'CSV', extensions: ['csv'] }
+
     ],
     message: 'Select a tacview file you would like to import'
   };
@@ -28,7 +29,22 @@ ipcMain.on('show-open-dialog', (event, arg)=> {
 const template = [
   {
     label: 'DWR',
-    submenu:[],
+    role: 'window',
+    submenu: [
+      {
+        label: 'Reload',
+        accelerator: 'CmdOrCtrl+R',
+        click (item, window) {
+          if (window) window.reload()
+        }
+      },
+      {
+        role: 'minimize'
+      },
+      {
+        role: 'close'
+      }
+    ]
   },
   {
      label: 'Edit',
@@ -52,25 +68,6 @@ const template = [
         role: 'paste'
       }
     ]
-  },
-  {
-    role: 'window',
-    submenu: [
-      {
-         role: 'minimize'
-      },
-      {
-        role: 'close'
-      }
-    ]
-  },
-  {
-    role: 'help',
-    submenu: [
-      {
-        label: 'About DCS War Room'
-      }
-    ]
   }
 ]
 
@@ -89,7 +86,10 @@ app.once('ready', () => {
     center: true,
     backgroundColor: "#D6D8DC",
     // Don't show the window until it's ready, this prevents any white flickering
-    show: false
+    show: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
 
   // Open the dev tools by default
@@ -107,8 +107,8 @@ app.once('ready', () => {
     window.show()
   })
 
-  appconsole.log('Console Logging test');
-  
+  //appconsole.log('Console Logging test');
+
   // Open select file dialog
   //appconsole.log(dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] }))
   //appconsole.log(dialog.showOpenDialog({ properties: ['openFile'] }))

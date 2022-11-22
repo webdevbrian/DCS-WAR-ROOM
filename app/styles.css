@@ -1,10 +1,5 @@
-html {
-  position: relative;
-  min-height: 100%;
-}
-body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
+html, body {
+  height: 100%;
 }
 
 html, body, .container-fluid {
@@ -17,6 +12,10 @@ body > .container {
 
 .container .text-muted {
   margin: 20px 0;
+}
+
+.importing, .no-tacviews {
+  display: none;
 }
 
 .text-input {
