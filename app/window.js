@@ -2,26 +2,54 @@ const { Console } = require('console');
 const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const exec = require('child_process').exec;
-const rootPath = require('electron-root-path').rootPath;
+if (require('electron-squirrel-startup')) app.quit();
+//const rootPath = require('electron-root-path').rootPath; // OSX
+const rootPath = process.cwd(); // Windows -- production: process.cwd() + '/resources/app/'
+
+//
+// TODO: Move all DB things to utils/db.js
+//
 const initSqlJs = require('sql.js');
+const dbFile = fs.readFileSync(rootPath + "/dwr.sqlite3"); // Windows "make" location const dbFile = fs.readFileSync(rootPath + "\\resources\\app\\dwr.sqlite3");
 
-const dbFileBuffer = fs.readFileSync(rootPath + "/dwr.sqlite3");
+function db(query) {
+  return new Promise((resolve) => {
+    initSqlJs().then(function (SQL) {
+      console.log('Query ' + query);
+      const db = new SQL.Database(dbFile);
+      const res = db.exec(query);
+      resolve(res);
+      db.close();
+    });
+  });
+}
 
-initSqlJs().then(function (SQL) {
-  const db = new SQL.Database(dbFileBuffer);
-  const res = db.exec("SELECT * FROM flightlogs");
+async function dbQuery(query) {
+  const response = await db(query).catch((err) => {
+    console.error('Error executing DB Query: ' + err);
+    return "Error executing DB Query";
+  });
 
-  console.log(res);
-  db.close();
+  return response;
+}
+
+const dbres = Promise.resolve(dbQuery("SELECT * FROM flightlogimports"));
+dbres.then((res) => {
+
+  if(res.length !== 0) {
+    console.log(v[0]);
+    // all data returned from query
+    // console.log(v[0]['columns'][0]); // first column name
+    // console.log(v[0]['values'][0]); // first row in query
+  } else {
+    console.log('Response is empty');
+  }
+
 });
 
-initSqlJs().then(function (SQL) {
-  const db = new SQL.Database(dbFileBuffer);
-  const res = db.exec("SELECT * FROM flightlogimports");
-
-  console.log(res);
-  db.close();
-});
+//
+// TODO: Put all helper functions in utils location
+//
 
 ipcRenderer.on('open-dialog-paths-selected', (event, arg)=> {
   dialog.handler.outputSelectedPathsFromOpenDialog(arg);
@@ -31,7 +59,23 @@ ipcRenderer.on('show-message-box-response', (event, args) => {
   dialog.handler.outputMessageboxResponse(args);
 })
 
+function disableUI(disable){
+  if(disable){
+    $('.importing').show();
+    $('#import').hide();
+    $(document.body).css({'cursor' : 'wait'});
+    $('.nav-item a').addClass('disabled');
+  } else {
+    $('.importing').hide();
+    $('#import').show();
+    $(document.body).css({'cursor' : 'default'});
+    $('.nav-item a').removeClass('disabled');
+  }
+};
+
 window.dialog = window.dialog || {},
+
+// do not put anything here between window.dialog and the IIFE function(n)
 
 function(n) {
 
@@ -45,21 +89,24 @@ function(n) {
     exec(command, toastTitle, (error, stdout, stderr) => {
       if (error || stderr || stdout) {
         $('.tacview-toast .toast-body').text(`error: ${error.message} ` + `stderr: ${stderr}` + `stdout: ${stdout}`);
-        $('.importing').hide();
+
+        // Enable UI
+        disableUI(false);
+
         toast.show();
-        return;
       } else {
+
         //
         // Handle the SQLite database import here
         // After successful import delete the old CSV file for cleanup
         //
+
         $('.toast-title').text(toastTitle);
         $('.tacview-toast .toast-body').text('Success!');
-        $('.importing').hide();
-        $('#import').show();
-        $('.nav-item a').removeClass('disabled');
-        $(document.body).css({'cursor' : 'default'});
         toast.show();
+
+        // Enable UI
+        disableUI(false);
       }
     });
   };
@@ -72,40 +119,27 @@ function(n) {
   }
 
   dialog.handler = {
+
+    // Show the open file dialog
     showOpenDialog: function() {
       ipcRenderer.send('show-open-dialog');
     },
 
     outputSelectedPathsFromOpenDialog: function(paths) {
       if(paths !== null){
-        //
-        // Read file contents
-        // let data = fs.readFileSync(paths[0])
-        // console.log(data);
-
-        // if(fs.existsSync(paths)) {
-        //   let data = fs.readFileSync(paths, 'utf8').split('\n')
-        //   console.log(data);
-        // }
-        //
 
         //
         // Automate Tacview csv export
         // Find out if user installed it with or without steam
-        // Default steam installation location: C:\Program Files (x86)\Steam\steamapps\common\Tacview
-        // Default windows installation location: C:\Program Files (x86)\Tacview
-        //
-        // TODO: Detect if they have either one installed and error out and tell them they don't have tacview installed ...
         //
 
         const tacviewPath = fs.existsSync('C:\\Program Files (x86)\\Steam\\steamapps\\common\\Tacview') ? 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Tacview' : 'C:\Program Files (x86)\Tacview';
         const command = '"' + tacviewPath + '\\Tacview.exe" -Open:"' + paths[0] + '" -ExportFlightLog:"' + rootPath + '\\' + getTacviewFileName(paths[0]) + '.csv" -Quiet –Quit';
         const toastTitle = 'Imported "' + getTacviewFileName(paths[0]) + '"';
 
-        $('.importing').show();
-        $(document.body).css({'cursor' : 'wait'});
-        $('#import').hide();
-        $('.nav-item a').addClass('disabled');
+        // Disable UI
+        disableUI(true);
+
         execute(command, toastTitle);
       }
     },
@@ -119,6 +153,6 @@ function(n) {
 
   n(function() {
     dialog.handler.init();
-    $('.importing, .no-tacviews').hide();    
+    $('.importing, .no-tacviews').hide();
   })
 }(jQuery);

@@ -1,12 +1,12 @@
 {
   "name": "dcs-war-room",
+  "author": "webdevbrian",
   "version": "1.0.0",
   "description": "A digital combat simulator oriented flight and combat stats system powered by tacview",
   "repository": "webdevbrian/DCS-WAR-ROOM",
   "main": "app.js",
   "scripts": {
     "start": "electron-forge start",
-    "startforge": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make"
   },

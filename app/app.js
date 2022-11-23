@@ -1,6 +1,7 @@
 const {app, BrowserWindow, Menu, MenuItem, ipcMain, dialog} = require('electron')
 const path = require('path')
 const url = require('url')
+if (require('electron-squirrel-startup')) app.quit();
 
 let window = null
 
@@ -88,7 +89,8 @@ app.once('ready', () => {
     // Don't show the window until it's ready, this prevents any white flickering
     show: false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      contextIsolation: false // This isn't great. TODO: Fix this and not use this! Info: https://www.electronjs.org/docs/latest/tutorial/context-isolation
     }
   })
 
@@ -112,5 +114,5 @@ app.once('ready', () => {
   // Open select file dialog
   //appconsole.log(dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] }))
   //appconsole.log(dialog.showOpenDialog({ properties: ['openFile'] }))
-  
+
 })
