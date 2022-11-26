@@ -1,6 +1,7 @@
 {
   "WELCOME": "/",
   "ABOUT": "/about",
+  "FLIGHTLOGS": "/flightlogs",
   "MOTD": "/motd",
   "LOCALIZATION": "/localization",
   "UNDOREDO": "/undoredo",

@@ -11,10 +11,10 @@ class Welcome extends React.Component {
             <section className="hero is-info">
               <div className="hero-body">
                 <p className="title">
-                  Thank you for trying out the secure-electron-template!
+                  Welcome to DCS War Room!
                 </p>
                 <p className="subtitle">
-                  Please navigate to view the features of this template.
+                  This is a tacview powered system used to generate statistics and data based on tacview recorded flights either by yourself or with your DCS flight group.
                 </p>
               </div>
             </section>

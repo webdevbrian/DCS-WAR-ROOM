@@ -5,6 +5,8 @@ const Store = require("secure-electron-store").default;
 const ContextMenu = require("secure-electron-context-menu").default;
 const SecureElectronLicenseKeys = require("secure-electron-license-keys");
 
+window.require = require;
+
 // Create the electron store to be made available in the renderer process
 const store = new Store();
 

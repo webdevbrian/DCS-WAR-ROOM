@@ -55,12 +55,12 @@ async function createWindow() {
 
   // Create the browser window.
   win = new BrowserWindow({
-    minWidth: 800,
-    minHeight: 600,
+    width: 1500,
+    height: 600,
     title: "Application is currently initializing...",
     webPreferences: {
       devTools: isDev,
-      nodeIntegration: false,
+      nodeIntegration: true,
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
       contextIsolation: true,
@@ -110,7 +110,7 @@ async function createWindow() {
   }
 
   win.webContents.on("did-finish-load", () => {
-    win.setTitle(`Getting started with secure-electron-template (v${app.getVersion()})`);
+    win.setTitle(`DCS War Room (v${app.getVersion()})`);
   });
 
   // Only do these things when in development

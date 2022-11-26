@@ -10,3 +10,12 @@ body {
 #target {
   height: -webkit-fill-available;
 }
+
+.notification {
+  width: 400px;
+}
+
+td {
+  vertical-align: middle;
+  display: table-cell;
+}
