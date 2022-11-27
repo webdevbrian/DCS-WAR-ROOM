@@ -24,7 +24,6 @@ class Flightlogs extends React.Component {
 
   onSubmitMessage(event) {
     event.preventDefault(); // prevent navigation
-    window.api.store.send(writeConfigRequest, "flightlogs", this.state.message); // save message to store (persist)
 
     // reset
     this.setState((_state) => ({
