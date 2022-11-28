@@ -4,7 +4,7 @@ import { ipcRenderer } from "electron";
 import jetpack from "fs-jetpack";
 const fs = require('fs');
 const exec = require('child_process').exec;
-const rootPath = process.cwd(); // Verify if this is the same as `exec` (in dev and published app...)
+const rootPath = process.cwd(); // TODO: Verify if this is the same as `exec` (in dev and published app...)
 
 //
 // IPC Renderer communications
@@ -24,8 +24,6 @@ ipcRenderer.on("app-path", (event, appDirPath) => {
   const appDir = jetpack.cwd(appDirPath);
   const manifest = appDir.read("package.json", "json");
   document.querySelector("title").innerHTML = "DCS War Room v" + manifest.version;
-
-  //document.querySelector("#flightLogInfo").innerHTML = JSON.stringify(manifest);
 
   console.log(appDirPath);
   console.log(rootPath);

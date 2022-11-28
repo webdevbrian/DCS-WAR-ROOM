@@ -33,7 +33,9 @@ const setApplicationMenu = () => {
   Menu.setApplicationMenu(Menu.buildFromTemplate(menus));
 };
 
-// We can communicate with our window (the renderer process) via messages.
+//
+// All IPC messages to render files
+//
 const initIpc = (dialog) => {
   ipcMain.on("need-app-path", (event, arg) => {
     event.reply("app-path", app.getAppPath());
@@ -41,26 +43,10 @@ const initIpc = (dialog) => {
   ipcMain.on("open-external-link", (event, href) => {
     shell.openExternal(href);
   });
-  // Show the main tacview dialog
+  //
+  // Show the main tacview file select dialog
+  //
   ipcMain.on('show-open-dialog', (event, arg)=> {
-    console.log('ICP main show open dialog recieved');
-
-    const options = {
-      title: 'Open a file',
-      //defaultPath: '/',
-      buttonLabel: 'Import Tacview',
-      filters: [
-        { name: 'ACMI', extensions: ['acmi'] },
-        { name: 'CSV', extensions: ['csv'] }
-
-      ],
-      message: 'Select a tacview file you would like to import'
-    };
-
-    console.log('mainjs show open dialog:');
-
-    console.log(dialog);
-
     dialog.showOpenDialog({
       title: 'Import Tacview',
       buttonLabel: 'Import Tacview',
@@ -75,18 +61,7 @@ const initIpc = (dialog) => {
       }
     }).catch(err => {
       console.log(err)
-    })
-
-    // dialog.showOpenDialog(null, options, (filePaths) => {
-    //   event.sender.send('open-dialog-paths-selected', filePaths)
-    // });
-
-    // dialog.showOpenDialog(null, options, (filePaths) => {
-    //   console.log('mainjs show open dialog 2');
-
-    //   event.sender.send('open-dialog-paths-selected', filePaths)
-
-    // });
+    });
   })
 };
 
