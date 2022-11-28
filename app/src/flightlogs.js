@@ -55,12 +55,12 @@ function disableUI(disable){
 //
 // Execute cli commands
 //
-function execute(command, toastTitle) {
+function execute(command, type) {
   console.log('fired execute');
   const dwrToast = document.getElementById('liveToast');
   const toast = new bootstrap.Toast(dwrToast);
 
-  exec(command, toastTitle, (error, stdout, stderr) => {
+  exec(command, type, (error, stdout, stderr) => {
     if (error || stderr || stdout) {
       // $('.tacview-toast .toast-body').text(`error: ${error.message} ` + `stderr: ${stderr}` + `stdout: ${stdout}`);
 
@@ -72,19 +72,26 @@ function execute(command, toastTitle) {
       console.log(`error: ${error.message} ` + `stderr: ${stderr}` + `stdout: ${stdout}`);
     } else {
 
-      console.log('Success');
+
 
       //
-      // Handle the SQLite database import here
-      // After successful import delete the old CSV file for cleanup
+      // Check the execution type
+      // Current types are STRING: tacview
       //
 
-      // $('.toast-title').text(toastTitle);
-      // $('.tacview-toast .toast-body').text('Success!');
-      // toast.show();
+      if(type ==='tacview') {
+        //
+        // Handle the SQLite database import here
+        // After successful import delete the old CSV file for cleanup
+        //
 
-      // // Enable UI
-      disableUI(false);
+        // Enable UI
+        disableUI(false);
+        console.log('Success');
+      }
+
+
+
     }
   });
 };
@@ -111,14 +118,14 @@ dialog.handler = {
 
       const tacviewPath = fs.existsSync('C:\\Program Files (x86)\\Steam\\steamapps\\common\\Tacview') ? 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Tacview' : 'C:\Program Files (x86)\Tacview';
       const command = '"' + tacviewPath + '\\Tacview.exe" -Open:"' + paths[0] + '" -ExportFlightLog:"' + rootPath + '\\' + getTacviewFileName(paths[0]) + '.csv" -Quiet –Quit';
-      const toastTitle = 'Imported "' + getTacviewFileName(paths[0]) + '"';
+      const type = 'Imported "' + getTacviewFileName(paths[0]) + '"';
 
       // Disable UI
       disableUI(true);
 
       console.log('fired output selected paths from dialog');
 
-      execute(command, toastTitle);
+      execute(command, 'tacview');
     }
   },
 
@@ -134,6 +141,7 @@ dialog.handler = {
     );
   }
 };
+
 dialog.handler.init();
 
 //

@@ -43,6 +43,7 @@ const initIpc = (dialog) => {
   ipcMain.on("open-external-link", (event, href) => {
     shell.openExternal(href);
   });
+
   //
   // Show the main tacview file select dialog
   //
