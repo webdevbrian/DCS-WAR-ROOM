@@ -119,7 +119,7 @@ const initIpc = (dialog) => {
       });
 
       //
-      // Get the last row (last updated) to send back to get added to the UI
+      // Get the last row (last updated) to send back to get added to the flightlog UI
       //
       database.all('SELECT * FROM flightlogs ORDER BY id DESC LIMIT 1;' , (err , data) => {
         if(err){
@@ -209,11 +209,9 @@ app.on("ready", () => {
     })
   );
 
-  mainWindow.openDevTools();
-
-  // if (env.name === "development") {
-  //   mainWindow.openDevTools();
-  // }
+  if (env.name === "development") {
+    mainWindow.openDevTools();
+  }
 });
 
 app.on("window-all-closed", () => {
