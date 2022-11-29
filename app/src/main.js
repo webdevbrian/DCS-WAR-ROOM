@@ -10,16 +10,17 @@ import appMenuTemplate from "./menu/app_menu_template";
 import editMenuTemplate from "./menu/edit_menu_template";
 import devMenuTemplate from "./menu/dev_menu_template";
 import createWindow from "./helpers/window";
+const sqlite3 = require('sqlite3');
 
 // Special module holding environment variables which you declared
 // in config/env_xxx.json file.
 import env from "env";
 
-let mainWindow;
-
+//
 // Save userData in separate folders for each environment.
 // Thanks to this you can use production and development versions of the app
 // on same machine like those are two separate apps.
+//
 if (env.name !== "production") {
   const userDataPath = app.getPath("userData");
   app.setPath("userData", `${userDataPath} (${env.name})`);
@@ -30,18 +31,129 @@ const setApplicationMenu = () => {
   if (env.name !== "production") {
     menus.push(devMenuTemplate);
   }
+
   Menu.setApplicationMenu(Menu.buildFromTemplate(menus));
 };
 
 //
-// All IPC messages to render files
+// All IPC messages to render files (app.js / flightlogs.js etc)
 //
 const initIpc = (dialog) => {
+
   ipcMain.on("need-app-path", (event, arg) => {
     event.reply("app-path", app.getAppPath());
   });
+
   ipcMain.on("open-external-link", (event, href) => {
     shell.openExternal(href);
+  });
+
+  //
+  // Database IPCs
+  //
+  ipcMain.on('flightlogs', (event, arg) => {
+
+    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+      if (err) console.error('Database opening error: ', err);
+    });
+
+    const sql = arg;
+
+    database.serialize(() => {
+      database.each(sql, (err, rows) => {
+        event.reply('flightlogsDBResponse', (err && err.message) || rows);
+      });
+
+      database.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+
+        console.log('Closed the database connection.');
+      });
+    });
+  });
+
+  ipcMain.on('deleteFlight', (event, arg) => {
+    const sql = arg;
+    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+      if (err) console.error('Database opening error: ', err);
+    });
+
+    database.serialize(() => {
+      database.run(sql, (err) => {
+        event.reply('flightlogsDeleteFlight', err);
+      });
+
+      database.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+
+        console.log('Closed the database connection.');
+      });
+    });
+  });
+
+  ipcMain.on('addFlight', (event, arg) => {
+    const sql = arg;
+    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+      if (err) console.error('Database opening error: ', err);
+    });
+
+    database.serialize(() => {
+      database.run(sql, (err) => {
+        if(err){
+          console.log(err);
+          return;
+        }
+
+        console.log("Insertion Done");
+      });
+
+      //
+      // Get the last row (last updated) to send back to get added to the UI
+      //
+      database.all('SELECT * FROM flightlogs ORDER BY id DESC LIMIT 1;' , (err , data) => {
+        if(err){
+          console.log(err);
+          return;
+        }
+
+        event.reply('flightLogAddFlight', data);
+      });
+
+      //event.reply('flightLogAddFlight', 'completed');
+
+      database.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+
+        console.log('Closed the database connection.');
+      });
+    });
+  });
+
+  ipcMain.on('getFlights', (event, arg) => {
+    const sql = arg;
+    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+      if (err) console.error('Database opening error: ', err);
+    });
+
+    database.serialize(() => {
+      database.each(sql, (err, rows) => {
+        event.reply('getFlightLogs', (err && err.message) || rows);
+      });
+    });
+
+    database.close((err) => {
+      if (err) {
+        console.error(err.message);
+      }
+
+      console.log('Closed the database connection.');
+    });
   });
 
   //
@@ -52,7 +164,7 @@ const initIpc = (dialog) => {
       title: 'Import Tacview',
       buttonLabel: 'Import Tacview',
       filters: [
-        { name: 'ACMI', extensions: ['acmi'] },
+        { name: 'ACMI', extensions: ['acmi'] }
         //{ name: 'CSV', extensions: ['csv'] } TODO: Potential support for tacview csv files in the future ... needs acceptance criteria.
       ],
       message: 'Select a tacview file you would like to import'
@@ -70,7 +182,7 @@ app.on("ready", () => {
   setApplicationMenu();
   initIpc(dialog);
 
-  mainWindow = createWindow("main", {
+  const mainWindow = createWindow("main", {
     width: 1000,
     height: 600,
     webPreferences: {
