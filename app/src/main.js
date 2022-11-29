@@ -17,14 +17,13 @@ const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
 
 console.log(rootPath);
 
-// Special module holding environment variables which you declared
-// in config/env_xxx.json file.
+//
+// Special module holding environment variables which are declared in config/env_xxx.json file.
+//
 import env from "env";
 
 //
 // Save userData in separate folders for each environment.
-// Thanks to this you can use production and development versions of the app
-// on same machine like those are two separate apps.
 //
 if (env.name !== "production") {
   const userDataPath = app.getPath("userData");

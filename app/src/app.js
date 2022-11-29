@@ -1,32 +1,18 @@
 import "./stylesheets/main.css";
-
 import { ipcRenderer } from "electron";
-import jetpack from "fs-jetpack";
-import { greet } from "./hello_world/hello_world";
-import env from "env";
 
 document.querySelector("#app").style.display = "block";
-document.querySelector("#greet").innerHTML = greet();
-document.querySelector("#env").innerHTML = env.name;
-document.querySelector("#electron-version").innerHTML =
-  process.versions.electron;
 
-const osMap = {
-  win32: "Windows",
-  darwin: "macOS",
-  linux: "Linux"
-};
-document.querySelector("#os").innerHTML = osMap[process.platform];
-
-// We can communicate with main process through messages.
-ipcRenderer.on("app-path", (event, appDirPath) => {
-  // Holy crap! This is browser window with HTML and stuff, but I can read
-  // files from disk like it's node.js! Welcome to Electron world :)
-  const appDir = jetpack.cwd(appDirPath);
-  const manifest = appDir.read("package.json", "json");
-  document.querySelector("#author").innerHTML = manifest.author;
+//
+// Quick flightlog statistics - TODO: Join multiple queries here and add multiple stats.
+// Stats like: how many flights importing this month, how many tracked pilots, how many tracked munitions
+//             how many overall deaths, how many overall kills, the most deadly munition by kill percentage
+//             the most used airframe/module by count, the most popular landed airport, the overall most wasted munition (shot but no hits via data)
+//
+ipcRenderer.send("flightlogs", 'SELECT COUNT(*) AS count FROM flightlogs');
+ipcRenderer.on("flightlogsDBResponse", (event, flightLogData) => {
+  document.querySelector("#stats").innerHTML = '<strong>FlightLogs</strong>: ' + flightLogData.count;
 });
-ipcRenderer.send("need-app-path");
 
 document.querySelector(".electron-website-link").addEventListener(
   "click",
