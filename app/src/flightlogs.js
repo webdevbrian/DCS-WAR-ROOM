@@ -34,20 +34,19 @@ ipcRenderer.on("flightlogsDeleteFlight", () => {
   // Remove Row from UI
   //
   console.log('Deleted:', tableRowId);
-  document.getElementById('row-' + tableRowId).outerHTML = "";
+  document.getElementById('row-' + tableRowId).outerHTML = ""; // This returns null when importing a tacview...
 });
 
 ipcRenderer.on("flightLogAddFlight", (event, flightLogData) => {
   const flightLog = flightLogData[0];
 
   //
-  // Add Row to UI
+  // Add Row to UI (add to top of table as table is ordered DESC sort)
   //
   let flightLogsTable = document.querySelector(".flight-logs");
   let flightLogsTableRow = document.createElement("tr");
-  //flightLogsTable.appendChild(flightLogsTableRow).setAttribute('id', 'row-' + flightLog.id);
 
-  flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild);
+  flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild).setAttribute('id', 'row-' + flightLog.id);
 
   flightLogsTableRow.appendChild(document.createElement("td"))
     .appendChild(document.createElement("div")).innerHTML = flightLog.id
@@ -231,7 +230,6 @@ document.addEventListener("click", function(e){
   let target = e.target.closest(".delete"); // Or any other selector.
 
   if(target){
-
     tableRowId = target.id.split("-").pop();
 
     //
