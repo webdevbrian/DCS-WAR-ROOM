@@ -240,11 +240,11 @@ document.addEventListener("click", function(e){
 });
 
 // Launch all links with this class externally
-document.querySelector(".electron-website-link").addEventListener(
-  "click",
-  event => {
-    ipcRenderer.send("open-external-link", event.target.href);
-    event.preventDefault();
-  },
-  false
-);
+// document.querySelector(".electron-website-link").addEventListener(
+//   "click",
+//   event => {
+//     ipcRenderer.send("open-external-link", event.target.href);
+//     event.preventDefault();
+//   },
+//   false
+// );

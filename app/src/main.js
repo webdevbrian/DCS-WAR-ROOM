@@ -11,6 +11,11 @@ import editMenuTemplate from "./menu/edit_menu_template";
 import devMenuTemplate from "./menu/dev_menu_template";
 import createWindow from "./helpers/window";
 const sqlite3 = require('sqlite3');
+const rootPath = process.cwd();
+
+const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
+
+console.log(rootPath);
 
 // Special module holding environment variables which you declared
 // in config/env_xxx.json file.
@@ -53,7 +58,10 @@ const initIpc = (dialog) => {
   //
   ipcMain.on('flightlogs', (event, arg) => {
 
-    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+    console.log('DB Path');
+    console.log(dbPath);
+
+    const database = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Database opening error: ', err);
     });
 
@@ -76,7 +84,7 @@ const initIpc = (dialog) => {
 
   ipcMain.on('deleteFlight', (event, arg) => {
     const sql = arg;
-    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+    const database = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Database opening error: ', err);
     });
 
@@ -97,7 +105,7 @@ const initIpc = (dialog) => {
 
   ipcMain.on('addFlight', (event, arg) => {
     const sql = arg;
-    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+    const database = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Database opening error: ', err);
     });
 
@@ -123,8 +131,6 @@ const initIpc = (dialog) => {
         event.reply('flightLogAddFlight', data);
       });
 
-      //event.reply('flightLogAddFlight', 'completed');
-
       database.close((err) => {
         if (err) {
           console.error(err.message);
@@ -137,7 +143,7 @@ const initIpc = (dialog) => {
 
   ipcMain.on('getFlights', (event, arg) => {
     const sql = arg;
-    const database = new sqlite3.Database('./src/default_db.sqlite3', (err) => {
+    const database = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Database opening error: ', err);
     });
 
@@ -204,9 +210,11 @@ app.on("ready", () => {
     })
   );
 
-  if (env.name === "development") {
-    mainWindow.openDevTools();
-  }
+  mainWindow.openDevTools();
+
+  // if (env.name === "development") {
+  //   mainWindow.openDevTools();
+  // }
 });
 
 app.on("window-all-closed", () => {

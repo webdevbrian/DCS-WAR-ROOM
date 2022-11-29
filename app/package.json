@@ -2,14 +2,14 @@
   "name": "dcs-war-room",
   "productName": "DCS War Room",
   "description": "Starter for your Electron application",
-  "version": "1.0",
+  "version": "1.0.0",
   "private": true,
   "author": "webdevbrian / phrozen755",
   "copyright": "© 2023 Revolution Development, LLC",
   "homepage": "http://wearerev.com",
   "main": "app/main.js",
   "build": {
-    "appId": "com.example.electron-boilerplate",
+    "appId": "com.example.dcs-war-room",
     "files": [
       "app/**/*",
       "node_modules/**/*",
@@ -18,6 +18,13 @@
     "directories": {
       "buildResources": "resources"
     },
+    "extraFiles": [
+      {
+        "from": "resources/database",
+        "to": "resources/database",
+        "filter": ["**/*"]
+      }
+    ],
     "publish": null
   },
   "scripts": {
@@ -31,6 +38,7 @@
     "release": "npm test && webpack --config=build/webpack.app.config.js --env=production && electron-builder"
   },
   "dependencies": {
+    "electron-log": "^4.4.8",
     "fs-jetpack": "^4.1.0",
     "postinstall": "^0.8.0",
     "sqlite-electron": "^2.2.5",
