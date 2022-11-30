@@ -44,10 +44,10 @@ ipcRenderer.on("flightLogAddFlight", (event, flightLogData) => {
   // Format dates
   //
   const date1 = new Date(flightLog.import_date);
-  const date2 = date1.getFullYear()+'-' + (date1.getMonth()+1) + '-'+date1.getDate() + ' @ ' + date1.getHours() + ':' + date1.getMinutes();
+  const date2 = date1.getFullYear()+'-' + (date1.getMonth() + 1).substr(-2) + '-' + ('0' + date1.getDate()).substr(-2) + ' @ ' + ('0' + date1.getHours()).substr(-2) + ':' + ('0' + date1.getMinutes()).substr(-2);
 
   const flight_date1 = new Date(flightLog.flight_date);
-  const flight_date = flight_date1.getFullYear() + '-' + (flight_date1.getMonth() + 1) + '-' + flight_date1.getDate() + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
+  const flight_date = flight_date1.getFullYear() + '-' + ('0' + flight_date1.getMonth()).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
 
   //
   // Add Row to UI (add to top of table as table is ordered DESC sort)
@@ -85,10 +85,10 @@ ipcRenderer.on("flightlogsDBResponse", (event, flightLog) => {
   // Format dates
   //
   const import_date1 = new Date(flightLog.import_date);
-  const import_date = import_date1.getFullYear() + '-' + (import_date1.getMonth() + 1) + '-' + import_date1.getDate() + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
+  const import_date = import_date1.getFullYear() + '-' + ('0' + import_date1.getMonth() + 1).substr(-2) + '-' + ('0' + import_date1.getDate()).substr(-2) + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
 
   const flight_date1 = new Date(flightLog.flight_date);
-  const flight_date = flight_date1.getFullYear() + '-' + (flight_date1.getMonth() + 1) + '-' + flight_date1.getDate() + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
+  const flight_date = flight_date1.getFullYear() + '-' + ('0' + flight_date1.getMonth()).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
 
   //
   // Create flight log table
@@ -223,7 +223,19 @@ dialog.handler = {
       const tacviewPath = fs.existsSync('C:\\Program Files (x86)\\Steam\\steamapps\\common\\Tacview') ? 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Tacview' : 'C:\Program Files (x86)\Tacview';
       const command = '"' + tacviewPath + '\\Tacview.exe" -Open:"' + paths[0] + '" -ExportFlightLog:"' + rootPath + '\\' + getTacviewFileName(paths[0]) + '.csv" -Quiet –Quit';
 
+      //
+      // Strip file name and LOOSELY check for proper file format ex: Tacview-20221116-141049. TODO: Check with regex on this rather than just "Tacview"
+      //
+      let correctFormat = tacviewFileName.substring(0,7);
+
+      if(correctFormat !== 'Tacview') {
+        alert('It looks like the tacview file you are trying to import does not follow the normal file naming for Tacview! Please read the warning message above the "Import" button.');
+        return;
+      }
+
+      //
       // Disable UI
+      //
       disableUI(true);
 
       console.log('fired output selected paths from dialog');
