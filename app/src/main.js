@@ -29,7 +29,8 @@ if (env.name !== "production") {
 }
 
 const setApplicationMenu = () => {
-  const menus = [appMenuTemplate, editMenuTemplate];
+  //const menus = [appMenuTemplate, editMenuTemplate];
+  const menus = [appMenuTemplate];
   if (env.name !== "production") {
     menus.push(devMenuTemplate);
   }

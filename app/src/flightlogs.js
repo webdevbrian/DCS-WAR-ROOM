@@ -44,7 +44,8 @@ ipcRenderer.on("flightLogAddFlight", (event, flightLogData) => {
   // Format dates
   //
   const date1 = new Date(flightLog.import_date);
-  const date2 = date1.getFullYear()+'-' + (date1.getMonth() + 1).substr(-2) + '-' + ('0' + date1.getDate()).substr(-2) + ' @ ' + ('0' + date1.getHours()).substr(-2) + ':' + ('0' + date1.getMinutes()).substr(-2);
+  const date1Month = date1.getMonth() + 1;
+  const date2 = date1.getFullYear()+'-' +('0' + date1Month).substr(-2) + '-' + ('0' + date1.getDate()).substr(-2) + ' @ ' + ('0' + date1.getHours()).substr(-2) + ':' + ('0' + date1.getMinutes()).substr(-2);
 
   const flight_date1 = new Date(flightLog.flight_date);
   const flight_date = flight_date1.getFullYear() + '-' + ('0' + flight_date1.getMonth()).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
@@ -85,7 +86,8 @@ ipcRenderer.on("flightlogsDBResponse", (event, flightLog) => {
   // Format dates
   //
   const import_date1 = new Date(flightLog.import_date);
-  const import_date = import_date1.getFullYear() + '-' + ('0' + import_date1.getMonth() + 1).substr(-2) + '-' + ('0' + import_date1.getDate()).substr(-2) + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
+  const date1Month = import_date1.getMonth() + 1;
+  const import_date = import_date1.getFullYear() + '-' + ('0' + date1Month).substr(-2) + '-' + ('0' + import_date1.getDate()).substr(-2) + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
 
   const flight_date1 = new Date(flightLog.flight_date);
   const flight_date = flight_date1.getFullYear() + '-' + ('0' + flight_date1.getMonth()).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
@@ -136,11 +138,19 @@ function disableUI(disable){
     .forEach(function(element) {
       element.classList.add("disabled")
     });
+    document.querySelectorAll('.delete')
+    .forEach(function(element) {
+      element.classList.add("disabled")
+    });
   } else {
     document.querySelector(".importing").style.display = "none";
     document.querySelector(".import-tacview").style.display = "block";
     document.querySelector("body").style.cursor = 'default';
     document.querySelectorAll('.nav-link')
+    .forEach(function(element) {
+      element.classList.remove("disabled")
+    });
+    document.querySelectorAll('.delete')
     .forEach(function(element) {
       element.classList.remove("disabled")
     });
@@ -277,6 +287,11 @@ document.addEventListener("click", function(e){
     //
     // Delete Row from database (flightlogs and flightlogimports) TODO: Multi selection for delete via checkboxs!
     //
-    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
+    let text;
+    if (confirm("Are you sure you want to delete Tacview #" + tableRowId + "?") == true) {
+      ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
+    } else {
+      text = "You canceled!";
+    }
   }
 });
