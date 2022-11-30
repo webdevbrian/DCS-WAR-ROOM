@@ -46,15 +46,14 @@ ipcRenderer.on("flightLogAddFlight", (event, flightLogData) => {
   const date1 = new Date(flightLog.import_date);
   const date2 = date1.getFullYear()+'-' + (date1.getMonth()+1) + '-'+date1.getDate() + ' @ ' + date1.getHours() + ':' + date1.getMinutes();
 
+  const flight_date1 = new Date(flightLog.flight_date);
+  const flight_date = flight_date1.getFullYear() + '-' + (flight_date1.getMonth() + 1) + '-' + flight_date1.getDate() + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
+
   //
   // Add Row to UI (add to top of table as table is ordered DESC sort)
   //
   let flightLogsTable = document.querySelector(".flight-logs");
   let flightLogsTableRow = document.createElement("tr");
-
-  const flight_date1 = new Date(flightLog.flight_date);
-  const flight_date = flight_date1.getFullYear() + '-' + (flight_date1.getMonth() + 1) + '-' + flight_date1.getDate() + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
-
 
   flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild).setAttribute('id', 'row-' + flightLog.id);
 
