@@ -268,13 +268,3 @@ document.addEventListener("click", function(e){
     ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
   }
 });
-
-// Launch all links with this class externally
-// document.querySelector(".electron-website-link").addEventListener(
-//   "click",
-//   event => {
-//     ipcRenderer.send("open-external-link", event.target.href);
-//     event.preventDefault();
-//   },
-//   false
-// );
