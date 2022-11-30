@@ -12,10 +12,8 @@ import devMenuTemplate from "./menu/dev_menu_template";
 import createWindow from "./helpers/window";
 const sqlite3 = require('sqlite3');
 const rootPath = process.cwd();
-
 const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
-
-console.log(rootPath);
+// console.log(rootPath);
 
 //
 // Special module holding environment variables which are declared in config/env_xxx.json file.
@@ -43,7 +41,6 @@ const setApplicationMenu = () => {
 // All IPC messages to render files (app.js / flightlogs.js etc)
 //
 const initIpc = (dialog) => {
-
   ipcMain.on("need-app-path", (event, arg) => {
     event.reply("app-path", app.getAppPath());
   });
@@ -56,10 +53,6 @@ const initIpc = (dialog) => {
   // Database IPCs
   //
   ipcMain.on('flightlogs', (event, arg) => {
-
-    console.log('DB Path');
-    console.log(dbPath);
-
     const database = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Database opening error: ', err);
     });
@@ -76,7 +69,7 @@ const initIpc = (dialog) => {
           console.error(err.message);
         }
 
-        console.log('Closed the database connection.');
+        console.log('Closed the database connection (Flightlogs).');
       });
     });
   });
@@ -97,7 +90,7 @@ const initIpc = (dialog) => {
           console.error(err.message);
         }
 
-        console.log('Closed the database connection.');
+        console.log('Closed the database connection (Delete flight).');
       });
     });
   });
@@ -135,7 +128,7 @@ const initIpc = (dialog) => {
           console.error(err.message);
         }
 
-        console.log('Closed the database connection.');
+        console.log('Closed the database connection (Add flight).');
       });
     });
   });
@@ -157,7 +150,7 @@ const initIpc = (dialog) => {
         console.error(err.message);
       }
 
-      console.log('Closed the database connection.');
+      console.log('Closed the database connection (Get flights).');
     });
   });
 
@@ -172,7 +165,7 @@ const initIpc = (dialog) => {
         { name: 'ACMI', extensions: ['acmi'] }
         //{ name: 'CSV', extensions: ['csv'] } TODO: Potential support for tacview csv files in the future ... needs acceptance criteria.
       ],
-      message: 'Select a tacview file you would like to import'
+      message: 'Select a tacview file you would like to import' // This only shows for OSX ... might want to just remove this as our primary is windows
     }).then(result => {
       if(!result.canceled){
         event.reply('open-dialog-paths-selected', result.filePaths)
@@ -191,12 +184,8 @@ app.on("ready", () => {
     width: 1000,
     height: 600,
     webPreferences: {
-      // Two properties below are here for demo purposes, and are
-      // security hazard. Make sure you know what you're doing
-      // in your production app.
-      nodeIntegration: true,
+      nodeIntegration: true, // We need to  migrate away from this.
       contextIsolation: false,
-      // Spectron needs access to remote module
       enableRemoteModule: env.name === "test"
     }
   });
