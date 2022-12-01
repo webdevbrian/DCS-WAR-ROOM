@@ -96,7 +96,7 @@ const initIpc = (dialog) => {
     });
   });
 
-  ipcMain.on('addFlight', (event, arg) => {
+  ipcMain.on('addFlightLog', (event, arg) => {
     const sql = arg;
     const database = new sqlite3.Database(dbPath, (err) => {
       if (err) console.error('Database opening error: ', err);

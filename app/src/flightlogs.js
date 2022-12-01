@@ -4,6 +4,9 @@ import { contextIsolated } from "process";
 const fs = require('fs');
 const exec = require('child_process').exec;
 const rootPath = process.cwd();
+import { getCSV } from './utils/getCSV.js';
+const sqlite3 = require('sqlite3');
+const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
 
 let tableRowId;
 let tacviewFileName;
@@ -77,9 +80,14 @@ ipcRenderer.on("flightLogAddFlight", (event, flightLogData) => {
 //
 // Initially get all flightlogs from database
 //
-ipcRenderer.send("flightlogs", 'SELECT * FROM flightlogs ORDER BY id DESC LIMIT 500'); // TODO: Add pagination to table?
+// ipcRenderer.send("flightlogs", 'SELECT COUNT(*) AS count FROM flightlogs');
+// ipcRenderer.on("flightlogsDBResponse", (event, flightLogData) => {
+//   document.querySelector("#FlightLogsTitle").innerHTML = 'FlightLogs(' + flightLogData.count + ')';
+// });
 
-let tableRendered = false;
+ipcRenderer.send("flightlogs", 'SELECT * FROM flightlogs ORDER BY id DESC LIMIT 500;'); // TODO: Add pagination to table?
+
+let flightLogAmount = false;
 ipcRenderer.on("flightlogsDBResponse", (event, flightLog) => {
 
   //
@@ -165,7 +173,10 @@ function execute(command, props) {
 
   exec(command, props, (error, stdout, stderr) => {
     if (error || stderr || stdout) {
+
+      //
       // Enable UI
+      //
       disableUI(false);
 
       console.log(`error: ${error.message} ` + `stderr: ${stderr}` + `stdout: ${stdout}`);
@@ -200,11 +211,63 @@ function execute(command, props) {
         // Handle the SQLite database import here
         // After successful import delete the old CSV file for cleanup
         //
-        ipcRenderer.send("addFlight", 'INSERT INTO flightlogs (filename, import_date, flight_date) VALUES("' + tacviewFileName + '", "' + currentDate + '", "' + importDate + '");');
+        ipcRenderer.send("addFlightLog", 'INSERT INTO flightlogs (filename, import_date, flight_date) VALUES("' + tacviewFileName + '", "' + currentDate + '", "' + importDate + '");');
 
-        // Enable UI
-        disableUI(false);
-        console.log('Success');
+        //
+        // Insert CSV rendered from Tacview generation into flightlogimports
+        // + Add flightlog id for inserted flight log into flightlogimport flightlog_id column
+        //
+        let CSVFileLocation = rootPath + '\\' + tacviewFileName + '.csv';
+
+        let csvPromise = getCSV(CSVFileLocation);
+        csvPromise.then(function(result) {
+
+          const database = new sqlite3.Database(dbPath, (err) => {
+            if (err) console.error('Database opening error (Flight Log Import): ', err);
+          });
+
+          database.serialize(function() {
+
+            //
+            // Insert items from CSV into flightlogimports table
+            //
+            for(let i = 0; i < result.length; i++) {
+              let log = result[i];
+              database.run("INSERT INTO flightlogimports"
+                + " (mission_time, primary_object_id, primary_object_name, primary_object_coalition, primary_object_pilot, primary_object_registration, primary_object_squawk, event, occurences, secondary_object_id, secondary_object_name, secondary_object_coalition, secondary_object_pilot, secondary_object_registration, secondary_object_squawk, relevant_object_id, relevant_object_name, relevant_object_coalition, relevant_object_pilot, relevant_object_registration, relevant_object_squawk, flightlog_id) VALUES"
+                + " ($primaryObjectID, $primaryObjectName, $PrimaryObjectCoalition, $PrimaryObjectPilot, $PrimaryObjectRegistration, $PrimaryObjectSquawk, $Event, $Occurences, $SecondaryObjectID, $SecondaryObjectName, $SecondaryObjectCoalition, $SecondaryObjectPilot, $SecondaryObjectRegistration, $SecondaryObjectSquawk, $RelevantObjectID, $RelevantObjectName, $RelevantObjectCoalition, $RelevantObjectPilot, $RelevantObjectRegistration, $RelevantObjectSquawk, $flightLogID, $flightLogID)",
+              {
+                $primaryObjectID: log.primaryObjectID,
+                $primaryObjectName: log.primaryObjectName,
+                $PrimaryObjectCoalition: log.PrimaryObjectCoalition,
+                $PrimaryObjectPilot: log.PrimaryObjectPilot,
+                $PrimaryObjectRegistration: log.PrimaryObjectRegistration,
+                $PrimaryObjectSquawk: log.PrimaryObjectSquawk,
+                $Event: log.Event,
+                $Occurences: log.Occurences,
+                $SecondaryObjectID: log.SecondaryObjectID,
+                $SecondaryObjectName: log.SecondaryObjectName,
+                $SecondaryObjectCoalition: log.SecondaryObjectCoalition,
+                $SecondaryObjectPilot: log.SecondaryObjectPilot,
+                $SecondaryObjectRegistration: log.SecondaryObjectRegistration,
+                $SecondaryObjectSquawk: log.SecondaryObjectSquawk,
+                $RelevantObjectID: log.RelevantObjectID,
+                $RelevantObjectName: log.RelevantObjectName,
+                $RelevantObjectCoalition: log.RelevantObjectCoalition,
+                $RelevantObjectPilot: log.RelevantObjectPilot,
+                $RelevantObjectRegistration: log.RelevantObjectRegistration,
+                $RelevantObjectSquawk: log.RelevantObjectSquawk,
+                $flightLogID: log.flightLogID
+              });
+            }
+
+          });
+
+          // Enable UI
+          disableUI(false);
+          console.log('Success');
+
+        });
       }
     }
   });
@@ -290,6 +353,10 @@ document.addEventListener("click", function(e){
     let text;
     if (confirm("Are you sure you want to delete Tacview #" + tableRowId + "?") == true) {
       ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
+
+      //
+      // Delete flight from flightlogimport table by flightlog_id
+      //
     } else {
       text = "You canceled!";
     }
