@@ -53,25 +53,41 @@ const initIpc = (dialog) => {
   //
   // Database IPCs
   //
-  ipcMain.on('flightlogs', (event, arg) => {
-    const database = new sqlite3.Database(dbPath, (err) => {
-      if (err) console.error('Database opening error: ', err);
-    });
+  ipcMain.handle('flightlogs', async (event, arg) => {
+    let responseData;
 
-    const sql = arg;
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error: ', err);
+        });
 
-    database.serialize(() => {
-      database.each(sql, (err, rows) => {
-        event.reply('flightlogsDBResponse', (err && err.message) || rows);
-      });
+        database.serialize(() => {
+          database.all(sql , (err , data) => {
+            if(err){
+              console.log(err);
+              return;
+            }
 
-      database.close((err) => {
-        if (err) {
-          console.error(err.message);
-        }
+            responseData = data;
+            resolve(responseData);
+          });
 
-        console.log('Closed the database connection (Flightlogs).');
-      });
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection.');
+          });
+
+          console.log('Response (flightlogs): ', responseData);
+        });
+      } catch (error) {
+          console.log(`Error With Select ALL(): \r\n ${error}`)
+          reject();
+      }
     });
   });
 
@@ -95,44 +111,6 @@ const initIpc = (dialog) => {
       });
     });
   });
-
-  // ipcMain.handle('addFlightLog', async (event, arg) => {
-  //   let responseData;
-
-  //   return new Promise((resolve, reject) => {
-  //     try {
-  //       const sql = arg;
-  //       const database = new sqlite3.Database(dbPath, (err) => {
-  //         if (err) console.error('Database opening error: ', err);
-  //       });
-
-  //       database.serialize(() => {
-  //         database.run(sql, (err) => {
-  //           if(err){
-  //             console.log(err);
-  //             return;
-  //           }
-
-  //           console.log("Insertion Done");
-  //         });
-
-  //         database.close((err) => {
-  //           if (err) {
-  //             console.error(err.message);
-  //           }
-
-  //           console.log('Closed the database connection.');
-  //         });
-
-  //         resolve(responseData);
-  //         console.log('Response: ', responseData);
-  //       });
-  //     } catch (error) {
-  //         console.log(`Error With Select ALL(): \r\n ${error}`)
-  //         reject();
-  //     }
-  //   });
-  // });
 
   ipcMain.handle('addFlightLog', async (event, arg) => {
     let responseData;

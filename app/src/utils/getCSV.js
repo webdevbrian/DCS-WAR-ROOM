@@ -16,7 +16,7 @@ export function getCSV(file) {
           let line = lines[i],
               columns = line.split(',');
 
-          let missionTime = columns [0],
+          let missionTime = columns[0],
               primaryObjectID = columns[1],
               primaryObjectName = columns[2],
               PrimaryObjectCoalition = columns[3],
