@@ -22,7 +22,9 @@
       {
         "from": "resources/database",
         "to": "resources/database",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "publish": null

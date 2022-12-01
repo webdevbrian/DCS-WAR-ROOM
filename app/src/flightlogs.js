@@ -26,9 +26,6 @@ ipcRenderer.on("app-path", (event, appDirPath) => {
   const appDir = jetpack.cwd(appDirPath);
   const manifest = appDir.read("package.json", "json");
   document.querySelector("title").innerHTML = "DCS War Room v" + manifest.version;
-
-  console.log(appDirPath);
-  console.log(rootPath);
 });
 
 ipcRenderer.on("flightlogsDeleteFlight", () => {
@@ -40,47 +37,51 @@ ipcRenderer.on("flightlogsDeleteFlight", () => {
 //
 
 (async () => {
-  const flightLogs = await ipcRenderer.invoke('flightlogs', 'SELECT * FROM flightlogs ORDER BY id DESC;');
-  let flightLogsTable = document.querySelector(".flight-logs");
+  try {
+    const flightLogs = await ipcRenderer.invoke('flightlogs', 'SELECT * FROM flightlogs ORDER BY id DESC;');
+    let flightLogsTable = document.querySelector(".flight-logs");
 
-  for(let i = 0; i < flightLogs.length; i++) {
+    for(let i = 0; i < flightLogs.length; i++) {
 
-    //
-    // Format dates
-    //
-    const import_date1 = new Date(flightLogs[i].import_date);
-    const date1Month = import_date1.getMonth() + 1;
-    const import_date = import_date1.getFullYear() + '-' + ('0' + date1Month).substr(-2) + '-' + ('0' + import_date1.getDate()).substr(-2) + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
+      //
+      // Format dates
+      //
+      const import_date1 = new Date(flightLogs[i].import_date);
+      const date1Month = import_date1.getMonth() + 1;
+      const import_date = import_date1.getFullYear() + '-' + ('0' + date1Month).substr(-2) + '-' + ('0' + import_date1.getDate()).substr(-2) + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
 
-    const flight_date1 = new Date(flightLogs[i].flight_date);
-    const date2Month = flight_date1.getMonth() + 1;
-    const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
+      const flight_date1 = new Date(flightLogs[i].flight_date);
+      const date2Month = flight_date1.getMonth() + 1;
+      const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
 
-    //
-    // Append to flightlog table
-    //
-    let flightLogsTableRow = document.createElement("tr");
-    flightLogsTable.appendChild(flightLogsTableRow).setAttribute('id', 'row-' + flightLogs[i].id);
+      //
+      // Append to flightlog table
+      //
+      let flightLogsTableRow = document.createElement("tr");
+      flightLogsTable.appendChild(flightLogsTableRow).setAttribute('id', 'row-' + flightLogs[i].id);
 
-    flightLogsTableRow.appendChild(document.createElement("td"))
-      .appendChild(document.createElement("div")).innerHTML = flightLogs[i].id
+      flightLogsTableRow.appendChild(document.createElement("td"))
+        .appendChild(document.createElement("div")).innerHTML = flightLogs[i].id
 
-    flightLogsTableRow.appendChild(document.createElement("td"))
-      .appendChild(document.createElement("div")).innerHTML = flightLogs[i].filename
+      flightLogsTableRow.appendChild(document.createElement("td"))
+        .appendChild(document.createElement("div")).innerHTML = flightLogs[i].filename
 
-    flightLogsTableRow.appendChild(document.createElement("td"))
-      .appendChild(document.createElement("div")).innerHTML = import_date;
+      flightLogsTableRow.appendChild(document.createElement("td"))
+        .appendChild(document.createElement("div")).innerHTML = import_date;
 
-    flightLogsTableRow.appendChild(document.createElement("td"))
-      .appendChild(document.createElement("div")).innerHTML = flight_date;
+      flightLogsTableRow.appendChild(document.createElement("td"))
+        .appendChild(document.createElement("div")).innerHTML = flight_date;
 
-    flightLogsTableRow.appendChild(document.createElement("td"))
-      .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLogs[i].id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
-  }
+      flightLogsTableRow.appendChild(document.createElement("td"))
+        .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLogs[i].id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
+    }
 
-  if(flightLogsTable.childElementCount > 1) {
-    const noFlightLogs = document.getElementById('noFlightLogs');
-    noFlightLogs?.remove();
+    if(flightLogsTable.childElementCount > 1) {
+      const noFlightLogs = document.getElementById('noFlightLogs');
+      noFlightLogs?.remove();
+    }
+  } catch(err) {
+    console.log(err);
   }
 })();
 
@@ -220,8 +221,6 @@ function execute(command, props) {
           let csvPromise = getCSV(CSVFileLocation);
           csvPromise.then(function(result) {
 
-            console.log('GetCSV Result:', result);
-
             const database = new sqlite3.Database(dbPath, (err) => {
               if (err) console.error('Database opening error (Flight Log Import): ', err);
             });
@@ -273,7 +272,7 @@ function execute(command, props) {
             // Enable UI
             //
             disableUI(false);
-            console.log('Success');
+            console.log('Fired CSV import queries:', result.length);
           });
         })();
       }
