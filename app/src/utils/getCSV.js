@@ -1,44 +1,46 @@
 export function getCSV(file) {
-    return new Promise(function(resolve, reject) {
-      require('fs').readFile(file, "utf8", function(err, data) {
-        if (err) {
-          reject(err);
-        } else {
-          let lines = data.split('\n'),
-              columns = [],
-              item = {},
-              flightLogItems = [];
+  return new Promise(function(resolve, reject) {
+    require('fs').readFile(file, "utf8", function(err, data) {
+      if (err) {
+        reject(err);
+      } else {
+        let lines = data.split('\n'),
+            columns = [],
+            item = {},
+            flightLogItems = [];
 
-          for(let i = 0; i < lines.length - 1; i++) {
-            // Skip the row of column headers
-            if(i === 0) continue;
+        for(let i = 0; i < lines.length - 1; i++) {
+          // Skip the row of column headers
+          if(i === 0) continue;
 
-            let line = lines[i],
-                columns = line.split(',');
+          let line = lines[i],
+              columns = line.split(',');
 
-            let primaryObjectID = columns[0],
-                primaryObjectName = columns[1],
-                PrimaryObjectCoalition = columns[2],
-                PrimaryObjectPilot = columns[3],
-                PrimaryObjectRegistration = columns[4],
-                PrimaryObjectSquawk = columns[5],
-                Event = columns[6],
-                Occurences = columns[7],
-                SecondaryObjectID = columns[8],
-                SecondaryObjectName = columns[9],
-                SecondaryObjectCoalition = columns[10],
-                SecondaryObjectPilot = columns[11],
-                SecondaryObjectRegistration = columns[12],
-                SecondaryObjectSquawk = columns[13],
-                RelevantObjectID = columns[14],
-                RelevantObjectName = columns[15],
-                RelevantObjectCoalition = columns[16],
-                RelevantObjectPilot = columns[17],
-                RelevantObjectRegistration = columns[18],
-                RelevantObjectSquawk = columns[19],
-                flightLogID = columns[20]; // Pass this in from flight log
+          let missionTime = columns [0],
+              primaryObjectID = columns[1],
+              primaryObjectName = columns[2],
+              PrimaryObjectCoalition = columns[3],
+              PrimaryObjectPilot = columns[4],
+              PrimaryObjectRegistration = columns[5],
+              PrimaryObjectSquawk = columns[6],
+              Event = columns[7],
+              Occurences = columns[8],
+              SecondaryObjectID = columns[9],
+              SecondaryObjectName = columns[10],
+              SecondaryObjectCoalition = columns[11],
+              SecondaryObjectPilot = columns[12],
+              SecondaryObjectRegistration = columns[13],
+              SecondaryObjectSquawk = columns[14],
+              RelevantObjectID = columns[15],
+              RelevantObjectName = columns[16],
+              RelevantObjectCoalition = columns[17],
+              RelevantObjectPilot = columns[18],
+              RelevantObjectRegistration = columns[19],
+              RelevantObjectSquawk = columns[20],
+              flightLogID = columns[21];
 
-            flightLogItems.push({
+          flightLogItems.push({
+              "missionTime": missionTime,
               "primaryObjectID": primaryObjectID,
               "primaryObjectName": primaryObjectName,
               "PrimaryObjectCoalition": PrimaryObjectCoalition,
@@ -61,11 +63,9 @@ export function getCSV(file) {
               "RelevantObjectSquawk": RelevantObjectSquawk,
               "flightLogID": flightLogID
             });
-
-          } // end for
-          resolve(flightLogItems);
-
-        } // end else
-      }); // end readFile
-    }); // return promise
-  } // end getCSV
+          }
+        resolve(flightLogItems);
+      }
+    });
+  });
+}

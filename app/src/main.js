@@ -96,41 +96,89 @@ const initIpc = (dialog) => {
     });
   });
 
-  ipcMain.on('addFlightLog', (event, arg) => {
-    const sql = arg;
-    const database = new sqlite3.Database(dbPath, (err) => {
-      if (err) console.error('Database opening error: ', err);
-    });
+  // ipcMain.handle('addFlightLog', async (event, arg) => {
+  //   let responseData;
 
-    database.serialize(() => {
-      database.run(sql, (err) => {
-        if(err){
-          console.log(err);
-          return;
-        }
+  //   return new Promise((resolve, reject) => {
+  //     try {
+  //       const sql = arg;
+  //       const database = new sqlite3.Database(dbPath, (err) => {
+  //         if (err) console.error('Database opening error: ', err);
+  //       });
 
-        console.log("Insertion Done");
-      });
+  //       database.serialize(() => {
+  //         database.run(sql, (err) => {
+  //           if(err){
+  //             console.log(err);
+  //             return;
+  //           }
 
-      //
-      // Get the last row (last updated) to send back to get added to the flightlog UI
-      //
-      database.all('SELECT * FROM flightlogs ORDER BY id DESC LIMIT 1;' , (err , data) => {
-        if(err){
-          console.log(err);
-          return;
-        }
+  //           console.log("Insertion Done");
+  //         });
 
-        event.reply('flightLogAddFlight', data);
-      });
+  //         database.close((err) => {
+  //           if (err) {
+  //             console.error(err.message);
+  //           }
 
-      database.close((err) => {
-        if (err) {
-          console.error(err.message);
-        }
+  //           console.log('Closed the database connection.');
+  //         });
 
-        console.log('Closed the database connection (Add flight).');
-      });
+  //         resolve(responseData);
+  //         console.log('Response: ', responseData);
+  //       });
+  //     } catch (error) {
+  //         console.log(`Error With Select ALL(): \r\n ${error}`)
+  //         reject();
+  //     }
+  //   });
+  // });
+
+  ipcMain.handle('addFlightLog', async (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error: ', err);
+        });
+
+        database.serialize(() => {
+          database.run(sql, (err) => {
+            if(err){
+              console.log('Insertion Error', err);
+              return;
+            }
+
+            console.log("Insertion Done");
+          });
+
+          //
+          // Get the last row (last updated) to send back to get added to the flightlog UI
+          //
+          database.all('SELECT * FROM flightlogs ORDER BY id DESC LIMIT 1;' , (err , data) => {
+            if(err){
+              console.log(err);
+              return;
+            }
+
+            responseData = data;
+            resolve(responseData);
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Add flight).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Select ALL(): \r\n ${error}`)
+        reject();
+      }
     });
   });
 
