@@ -220,6 +220,8 @@ function execute(command, props) {
           let csvPromise = getCSV(CSVFileLocation);
           csvPromise.then(function(result) {
 
+            console.log('GetCSV Result:', result);
+
             const database = new sqlite3.Database(dbPath, (err) => {
               if (err) console.error('Database opening error (Flight Log Import): ', err);
             });

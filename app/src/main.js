@@ -81,8 +81,6 @@ const initIpc = (dialog) => {
 
             console.log('Closed the database connection.');
           });
-
-          console.log('Response (flightlogs): ', responseData);
         });
       } catch (error) {
           console.log(`Error With Select ALL(): \r\n ${error}`)

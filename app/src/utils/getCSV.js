@@ -1,4 +1,5 @@
 export function getCSV(file) {
+  if(!file) return;
   return new Promise(function(resolve, reject) {
     require('fs').readFile(file, "utf8", function(err, data) {
       if (err) {
