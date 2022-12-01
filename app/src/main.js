@@ -230,8 +230,8 @@ app.on("ready", () => {
   initIpc(dialog);
 
   const mainWindow = createWindow("main", {
-    width: 1000,
-    height: 600,
+    width: 1200,
+    height: 800,
     webPreferences: {
       nodeIntegration: true, // We need to  migrate away from this.
       contextIsolation: false,
