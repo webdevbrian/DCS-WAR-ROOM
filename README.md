@@ -24,7 +24,7 @@ A digital combat simulator flight and combat stats system powered by tacview
 ---
 
 ## **Tooling**
-[IN PROGRESS] Build tool for automating tacview file csv exports to `flightlogimports table` and `flightlogs` in database
+[X] Build tool for automating tacview file csv exports to `flightlogimports table` and `flightlogs` in database
 
 ---
 

@@ -35,7 +35,6 @@ ipcRenderer.on("flightlogsDeleteFlight", () => {
 //
 // Initially get all flightlogs from database
 //
-
 (async () => {
   try {
     const flightLogs = await ipcRenderer.invoke('flightlogs', 'SELECT * FROM flightlogs ORDER BY id DESC;');

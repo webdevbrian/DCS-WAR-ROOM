@@ -1,1 +1,0 @@
-SELECT * FROM flightlogimports WHERE primary_object_pilot LIKE '%Phrozen' COLLATE NOCASE
