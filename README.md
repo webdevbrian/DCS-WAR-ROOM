@@ -32,7 +32,7 @@ A digital combat simulator flight and combat stats system powered by tacview
 
 [](Create frame work that utilizes bootstrap or otherwise in a HTML / web interface for interaction)
 
-[](Create interface for database associations for pilot duplication)
+[IN PROGRESS](Create interface for database associations for pilot duplication)
 
 ---
 
@@ -43,10 +43,6 @@ COMING SOON(tm)
 ---
 
 ## **Database**
-
-Currently I am using SQLite for the database. Simply just because I like the simplicity of it, nothing more really. I could be swayed into porting this over to another database in the future if given a very good reason or if we encounter performance issues.
-
-Anothe reason I do like using SQLite is that "SQLiteStudio" (the app of choice I'm using for this) is cross platform and in my opinion "bullshit free" in regards to bloat around what it needs to do. It provides a fantastic GUI for interfacing with the database for table / column changes we can check in for the "default" database that you will be using as a foundation for your flightlog imports.
 
 Below is a list of the current tables and columns currently used in the database with a description of it's data. This is so when you're poking around looking at the data you understand some of the types but more importantly how some of the data is formatted as to avoid confusion.
 
