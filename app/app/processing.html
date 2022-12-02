@@ -14,9 +14,9 @@
         </div>
 
         <ul class="nav nav-pills">
-          <li class="nav-item"><a href="#" class="nav-link active">Home</a></li>
+          <li class="nav-item"><a href="app.html" class="nav-link">Home</a></li>
           <li class="nav-item"><a href="flightlogs.html" class="nav-link">Flightlogs</a></li>
-          <li class="nav-item"><a href="processing.html" class="nav-link">Processing</a></li>
+          <li class="nav-item"><a href="#" class="nav-link active">Processing</a></li>
           <li class="nav-item"><a href="#" class="nav-link">Visualizations</a></li>
           <li class="nav-item"><a href="#" class="nav-link">About</a></li>
         </ul>
@@ -24,29 +24,48 @@
 
       <div class="p-5 mb-4 bg-light rounded-3 shadow rounded">
         <div class="container-fluid">
-          <h1 class="display-5 fw-bold">Stats, Visualizations and More</h1>
-          <p class="col-md-8 fs-4">DWR provides you coherent DCS statistics from your provided tacview files that can be used for post-mission BDAs (Battle Damage Assessments) and much more.</p>
-          <a class="btn btn-primary btn-lg" href="#link-to-discord" type="button">Visit our discord</a>
+          <h1 class="display-5 fw-bold">Processing</h1>
+          <p class="col-md-8 fs-4">Here you associate your pilots by the handles they use. You want to avoid using a full and specific name association.</p>
         </div>
       </div>
 
       <div class="row align-items-md-stretch">
         <div class="col-md-6">
-          <div class="h-100 p-5 text-white bg-dark rounded-3">
-            <h2>Quick stats</h2>
-            <p>Here are some quick stats so far on what you've supplied in DWR:</p>
-            <p id="stats"></p>
-            <!-- <button class="btn btn-outline-light" type="button">Example button</button> -->
+          <div class="h-100 p-5 bg-light border rounded-3">
+            <h2>Pilot Identifier</h2>
+            <p><strong>EXAMPLE:</strong> Adding "Phrozen" and "Brian" will match a <strong>SINGLE</strong> pilot to any callsign containing any capitializations of either, but either containing specifically "Phrozen" and "Brian".<br><br><strong>NOTE</strong>: It is <strong>not</strong> required to entire two, you only just need one. You can add two if someone changed their actual nickname (before callsigns) or do other clever matches using these two provided fields.</p>
+            <div class="d-flex">
+              <table>
+                <tbody>
+                  <tr>
+                    <td class="align-middle"><input class="form-control me-2" id="identifier1" type="search" placeholder='example: "Phrozen"' aria-label='example: "Phrozen"'></td>
+                    <td class="align-middle px-1">OR</td>
+                    <td class="align-middle"><input class="form-control me-2" id="identifier2" type="search" placeholder='example: "Brian"' aria-label='example: "Brian"'></td>
+                    <td class="align-middle"><button class="btn btn-outline-secondary" id="addPilot">Add</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <div class="col-md-6">
           <div class="h-100 p-5 bg-light border rounded-3">
-            <h2>Help contribute</h2>
-            <p>
-              Hey! Are you a developer and want to pick at some pretty cool analytics related to DCS? Want to help the DCS community and visualize some mission data provided via tacview? Click the link below and help add features, fix bugs and more!
-            </p>
-            <p>App author: <strong id="author">webdevbrian / phrozen</strong></p>
-            <a class="btn btn-outline-secondary electron-website-link" type="button" href="https://github.com/webdevbrian/DCS-WAR-ROOM">Github</a>
+            <h2>Currently tracked pilots</h2>
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">id</th>
+                  <th scope="col">Pilot identifier 1</th>
+                  <th scope="col">Pilot identifier 2</th>
+                </tr>
+              </thead>
+              <tbody class="flight-logs">
+                <!-- Dynamically rendered -->
+                <tr id="noFlightLogs">
+                  <td colspan="3"><div>No pilots added! Start tracking some!</div></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -56,7 +75,7 @@
       </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script src="processing.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
   </body>
 </html>

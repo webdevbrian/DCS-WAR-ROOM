@@ -6,8 +6,6 @@ export function getCSV(file) {
         reject(err);
       } else {
         let lines = data.split('\n'),
-            columns = [],
-            item = {},
             flightLogItems = [];
 
         for(let i = 0; i < lines.length - 1; i++) {

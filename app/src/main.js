@@ -184,8 +184,8 @@ const initIpc = (dialog) => {
   //
   ipcMain.on('show-open-dialog', (event, arg)=> {
     dialog.showOpenDialog({
-      title: 'Import Tacview',
-      buttonLabel: 'Import Tacview',
+      title: 'Import Tacview ✈️',
+      buttonLabel: 'Import Tacview ✈️',
       filters: [
         { name: 'ACMI', extensions: ['acmi'] }
         //{ name: 'CSV', extensions: ['csv'] } TODO: Potential support for tacview csv files in the future ... needs acceptance criteria.
@@ -208,6 +208,7 @@ app.on("ready", () => {
   const mainWindow = createWindow("main", {
     width: 1200,
     height: 800,
+    titleBarOverlay: true,
     webPreferences: {
       nodeIntegration: true, // We need to  migrate away from this.
       contextIsolation: false,
