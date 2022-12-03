@@ -668,16 +668,19 @@ let addPilot = function (pilot) {
   })();
 };
 document.querySelector("#addPilot").addEventListener("click", e => {
+  let processingModal = new bootstrap.Modal(document.getElementById("processingModal"), {});
+
   //
   // Add pilot for tracking
   //
-
   let identifier1 = document.getElementById('identifier1').value;
   let identifier2 = document.getElementById('identifier2').value;
   let trackBy = document.getElementById('trackBy').value;
   if (!identifier1 || !trackBy) {
-    alert('You need to supply at least the first identifier and a track by for the pilot you are trying to add.'); // We need to not use alerts, bootstrap hates it...
-    document.getElementById('identifier1').focus();
+    document.getElementById('processingModalTitle').innerHTML = 'Error adding pilot';
+    document.getElementById('processingModalBody').innerHTML = 'You need to supply at least the first identifier and a "track by" for the pilot you are trying to add.';
+    processingModal.show();
+    return;
   } else {
     let pilot = [identifier1, identifier2, trackBy];
     console.log(pilot);
