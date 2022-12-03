@@ -117,13 +117,13 @@ const initIpc = (dialog) => {
       try {
         const sql = arg;
         const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error: ', err);
+          if (err) console.error('Database opening error (Add flightlog): ', err);
         });
 
         database.serialize(() => {
           database.run(sql, (err) => {
             if(err){
-              console.log('Insertion Error', err);
+              console.log('Insertion Error (Add flightlog)', err);
               return;
             }
 
@@ -148,11 +148,59 @@ const initIpc = (dialog) => {
               console.error(err.message);
             }
 
-            console.log('Closed the database connection (Add flight).');
+            console.log('Closed the database connection (Add flightlog).');
           });
         });
       } catch (error) {
-        console.log(`Error With Select ALL(): \r\n ${error}`)
+        console.log(`Error With Add flightlog query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
+  ipcMain.handle('addPilot', async (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Pilot Track): ', err);
+        });
+
+        database.serialize(() => {
+          database.run(sql, (err) => {
+            if(err){
+              console.log('Insertion Error (Pilot Track)', err);
+              return;
+            }
+
+            console.log("Insertion Done");
+          });
+
+          //
+          // Get the last row (last updated) to send back
+          //
+          database.all('SELECT * FROM pilotdata ORDER BY id DESC LIMIT 1;' , (err , data) => {
+            if(err){
+              console.log(err);
+              return;
+            }
+
+            responseData = data;
+            resolve(responseData);
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Pilot Track).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Pilot track add db query: \r\n ${error}`)
         reject();
       }
     });
