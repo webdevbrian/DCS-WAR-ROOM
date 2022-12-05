@@ -32,7 +32,7 @@ A digital combat simulator flight and combat stats system powered by tacview
 
 :heavy_check_mark: (Create interface for database associations for pilot duplication)
 
-:white_check_mark: (Create first version of interface for adding additional tacview file data (map location via drop down to start))
+:x: (Create first version of interface for adding additional tacview file data (map location via drop down to start))
 
 ---
 
