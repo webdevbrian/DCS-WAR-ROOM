@@ -19,8 +19,6 @@ A digital combat simulator flight and combat stats system powered by tacview
 
 [X] Run test imports of tacview exports
 
-[X] Create default SQLite database and git ignore `main_db.sqlite3` to retain clean database reference
-
 ---
 
 ## **Tooling**
@@ -30,9 +28,9 @@ A digital combat simulator flight and combat stats system powered by tacview
 
 ## **User interface for data management (importing and other)**
 
-[](Create frame work that utilizes bootstrap or otherwise in a HTML / web interface for interaction)
+[X](Create framework that utilizes bootstrap or otherwise in a HTML / web interface for interaction)
 
-[IN PROGRESS](Create interface for database associations for pilot duplication)
+[X](Create interface for database associations for pilot duplication)
 
 ---
 
