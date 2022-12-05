@@ -13,6 +13,11 @@ let tacviewFileName;
 let manifest;
 document.querySelector(".importing").style.display = "none";
 
+let processingModal = new bootstrap.Modal(
+  document.getElementById("flightLogModal"),
+  {}
+);
+
 //
 // IPC Renderer communications
 //
@@ -327,16 +332,20 @@ dialog.handler = {
       let correctFormat = tacviewFileName.substring(0,7);
 
       if(correctFormat !== 'Tacview') {
-        alert('It looks like the tacview file you are trying to import does not follow the normal file naming for Tacview! Please read the warning message above the "Import" button.');
+        document.getElementById('flgihtLogModalTitle').innerHTML = 'Error importing Tacview';
+        document.getElementById('flgihtLogModalBody').innerHTML = 'It looks like the tacview file you are trying to import does not follow the normal file naming for Tacview! Please read the warning message above the "Import" button.';
+        flgihtLogModal.show();
         return;
       }
 
       //
-      // Check for duplicate tacview file importing via file name, warn the user
+      // TODO: Check for duplicate tacview file importing via file name, warn the user
       //
       let dupeName;
       if(tacviewFileName === dupeName) {
-        alert('Warning! It looks like you are going to import a duplicate tacview file! Proceed with caution.');
+        document.getElementById('flgihtLogModalTitle').innerHTML = 'Error importing Tacview';
+        document.getElementById('flgihtLogModalBody').innerHTML = 'Warning! It looks like you are going to import a duplicate tacview file! Proceed with caution.';
+        flgihtLogModal.show();
         return;
       }
 
@@ -373,11 +382,20 @@ dialog.handler.init();
 // DOM clicks / etc
 //
 
+document.querySelector("#closeModal").addEventListener(
+  "click",
+  e => {
+    processingModal.hide();
+    e.preventDefault();
+  },
+  false
+);
+
 //
 // Insert BRUH meme. TODO: Fix this up.
 //
 document.addEventListener("click", function(e){
-  let target = e.target.closest(".delete"); // Or any other selector.
+  let target = e.target.closest(".delete");
 
   if(target){
     tableRowId = target.id.split("-").pop();

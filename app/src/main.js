@@ -158,6 +158,42 @@ const initIpc = (dialog) => {
     });
   });
 
+  ipcMain.handle('getPilots', async (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Pilot Track GET): ', err);
+        });
+
+        database.serialize(() => {
+          database.all(sql, (err , data) => {
+            if(err){
+              console.log('Error (Pilot Track GET)', err);
+              return;
+            }
+            responseData = data;
+            resolve(responseData);
+            console.log("Pilot GET Done");
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Pilot Track).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Pilot track add db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
   ipcMain.handle('addPilot', async (event, arg) => {
     let responseData;
 
@@ -201,6 +237,46 @@ const initIpc = (dialog) => {
         });
       } catch (error) {
         console.log(`Error With Pilot track add db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
+  ipcMain.on('deletePilot', (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        console.log('Pilot delete fired: ', arg);
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Pilot Track): ', err);
+        });
+
+        database.serialize(() => {
+          //
+          // Get the last row (last updated) to send back
+          //
+          database.run(sql, (err , data) => {
+            if(err){
+              console.log(err);
+              return;
+            }
+
+            responseData = data;
+            resolve(responseData);
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Pilot Delete).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Pilot track delete db query: \r\n ${error}`)
         reject();
       }
     });

@@ -3,6 +3,8 @@ node_modules
 Thumbs.db
 *.log
 *.csv
+*.sqlite3-shm
+*.sqlite3-wal
 
 /dist
 /temp

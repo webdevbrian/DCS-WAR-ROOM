@@ -33,29 +33,27 @@
         <div class="col-md-6">
           <div class="h-100 p-5 bg-light border rounded-3">
             <h2>Pilot Identifier</h2>
-            <p><strong>EXAMPLE:</strong> Adding "Phrozen" and "Brian" will match a <strong>SINGLE</strong> pilot to any callsign containing any capitializations of either, but either containing specifically "Phrozen" and "Brian".<br><br><strong>NOTE</strong>: It is <strong>not</strong> required to provide both, just the first is required at minimum. You can add two if someone changed their actual nickname (before callsigns) or do other clever matches using these two provided fields.</p>
+            <p><strong>EXAMPLE:</strong> Adding "Phrozen" and "Brian" will match a <strong>SINGLE</strong> pilot to any callsign containing any capitializations of either, but either containing specifically "Phrozen" and "Brian".<br><br><strong>NOTE</strong>: It is <strong>not</strong> required to provide both, just the first is required at minimum. You can add two if someone changed their actual nickname (after their callsign for example) or do other clever matches using these two provided fields.</p>
             <div class="d-flex">
               <table>
-
-                  <tbody>
-                    <tr id="addPilotRow">
-                      <td class="align-middle">
-                        <input class="form-control me-2" id="identifier1" type="search" placeholder='Phrozen'>
-                      </td>
-                      <td class="align-middle px-1">OR</td>
-                      <td class="align-middle">
-                        <input class="form-control me-2" id="identifier2" type="search" placeholder='Brian'>
-                      </td>
-                      <td class="align-middle px-1">TRACKBY:</td>
-                      <td class="align-middle">
-                        <input class="form-control me-2" id="trackBy" type="search" placeholder='Brian'>
-                      </td>
-                      <td class="align-middle">
-                        <button class="btn btn-outline-secondary" id="addPilot">Add</button>
-                      </td>
-                    </tr>
-                  </tbody>
-
+                <tbody>
+                  <tr id="addPilotRow">
+                    <td class="align-middle">
+                      <input class="form-control me-2" id="identifier1" type="search" placeholder='Phrozen'>
+                    </td>
+                    <td class="align-middle px-1">OR</td>
+                    <td class="align-middle">
+                      <input class="form-control me-2" id="identifier2" type="search" placeholder='Brian'>
+                    </td>
+                    <td class="align-middle px-1">TRACKBY:</td>
+                    <td class="align-middle">
+                      <input class="form-control me-2" id="trackBy" type="search" placeholder='Brian'>
+                    </td>
+                    <td class="align-middle">
+                      <button class="btn btn-outline-secondary" id="addPilot">Add</button>
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
           </div>
@@ -69,14 +67,14 @@
                   <th scope="col">id</th>
                   <th scope="col">Identifier 1</th>
                   <th scope="col">Identifier 2</th>
-                  <th scope="col">Track by</th>
+                  <th scope="col">Tracked by</th>
                   <th></th>
                 </tr>
               </thead>
-              <tbody class="flight-logs">
+              <tbody class="pilot-logs">
                 <!-- Dynamically rendered -->
-                <tr id="noFlightLogs">
-                  <td colspan="5"><div>No pilots added! Start tracking some!</div></td>
+                <tr id="noPilots">
+                  <td colspan="5"><div>No pilots added.</div></td>
                 </tr>
               </tbody>
             </table>
@@ -96,7 +94,7 @@
               <h5 class="modal-title" id="processingModalTitle">Modal title</h5>
             </div>
             <div id="processingModalBody" class="modal-body"></div>
-            <div class="modal-footer">
+            <div id="processingModalFooter" class="modal-footer">
               <button type="button" class="btn btn-secondary" id="closeModal">Close</button>
             </div>
           </div>
