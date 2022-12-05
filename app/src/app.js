@@ -12,8 +12,11 @@ document.querySelector("#app").style.display = "block";
 
 (async () => {
   const flightLogData = await ipcRenderer.invoke('flightlogs', 'SELECT COUNT(*) AS count FROM flightlogs');
+  const pilotData = await ipcRenderer.invoke('getPilots', 'SELECT COUNT(*) AS count FROM pilotdata');
   const flightLog = flightLogData[0];
-  document.querySelector("#stats").innerHTML = '<strong>FlightLogs</strong>: ' + flightLog.count;
+  const pilotLog = pilotData[0];
+  document.querySelector("#stats").innerHTML = '<strong>Flight Logs</strong>: ' + flightLog.count + '<br/>'
+                                             + '<strong>Tracked Pilots</strong>: ' + pilotLog.count;
 })();
 
 // (async () => {
