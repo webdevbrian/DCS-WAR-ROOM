@@ -9,7 +9,7 @@
     <div id="app" class="container py-4">
       <header class="d-flex flex-wrap justify-content-center py-3 px-5 mb-4 border-bottom navbar fixed-top bg-light">
         <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-          <img src="../resources/icons/512x512.png" width="32" height="32" class="logo"/>
+          <div class="logo"></div>
           <span class="fs-4">DCS War Room</span>
         </div>
 
@@ -59,6 +59,7 @@
                 <tr>
                   <th scope="col">id</th>
                   <th scope="col">Tacview</th>
+                  <th scope="col">Map</th>
                   <th scope="col">Import Date</th>
                   <th scope="col">Flight Date</th>
                   <th scope="col"></th>
@@ -68,12 +69,12 @@
               <tbody class="flight-logs">
                 <!-- Dynamically rendered -->
                 <tr id="noFlightLogs">
-                  <td colspan="6"><div>No Flightlogs imported! Go ahead and import some above.</div></td>
+                  <td colspan="7"><div>No Flightlogs imported! Go ahead and import some above.</div></td>
                 </tr>
               </tbody>
             </table>
             <div id="loading">
-              <td colspan="6"><div><span class="spinner-border spinner-border-sm importing-text" role="status" aria-hidden="true"></span> Loading...</div></td>
+              <td colspan="7"><div><span class="spinner-border spinner-border-sm importing-text" role="status" aria-hidden="true"></span> Loading...</div></td>
             </div>
           </div>
         </div>
@@ -83,7 +84,7 @@
         DCS War Room
       </footer>
 
-      <!-- Modal -->
+      <!-- Modals -->
       <div class="modal fade" id="flightLogModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">

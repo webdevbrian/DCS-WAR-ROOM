@@ -3,6 +3,11 @@ import { ipcRenderer, getCurrentWindow } from "electron";
 
 document.querySelector("#app").style.display = "block";
 let tableRowId;
+
+
+//
+// Modals
+//
 let processingModal = new bootstrap.Modal(
   document.getElementById("processingModal"),
   {}
@@ -15,7 +20,7 @@ let deletePilotModal = function(tableRowID) {
   document.getElementById('processingModalBody').innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Are you sure you want to delete pilot ID #' + tableRowID + '?';
   document.getElementById('processingModalFooter').appendChild(document.createElement("div")).innerHTML = '<button type="button" class="btn btn-secondary btn-danger" id="deletePilotConfirm">Delete</button>';
   processingModal.show();
-}
+};
 
 ipcRenderer.on("pilotDelete", () => {
 // TODO: make all ipcRenderers promises using `await ipcRenderer.invoke`

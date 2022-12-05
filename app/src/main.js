@@ -89,6 +89,81 @@ const initIpc = (dialog) => {
     });
   });
 
+  ipcMain.handle('updateTacview', (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database update error (updateTacview): ', err);
+        });
+
+        console.log('fired update tacview event');
+
+        database.serialize(() => {
+          database.run(sql, (err , data) => {
+            if(err){
+              console.log('Error (updateTacview update)', err);
+              return;
+            }
+
+            console.log("updateTacview update Done");
+            responseData = data;
+            resolve(responseData);
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (updateTacview).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With updateTacview UPDATE db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
+  ipcMain.handle('getFlightLog', (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Flightlog): ', err);
+        });
+
+        database.serialize(() => {
+          database.all(sql, (err , data) => {
+            if(err){
+              console.log('Error (Flightlog GET)', err);
+              return;
+            }
+            responseData = data;
+            resolve(responseData);
+            console.log("Flightlog GET Done");
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Flightlog).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Flightlog GET db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
   ipcMain.on('deleteFlight', (event, arg) => {
     const sql = arg;
     const database = new sqlite3.Database(dbPath, (err) => {
@@ -279,27 +354,6 @@ const initIpc = (dialog) => {
         console.log(`Error With Pilot track delete db query: \r\n ${error}`)
         reject();
       }
-    });
-  });
-
-  ipcMain.on('getFlights', (event, arg) => {
-    const sql = arg;
-    const database = new sqlite3.Database(dbPath, (err) => {
-      if (err) console.error('Database opening error: ', err);
-    });
-
-    database.serialize(() => {
-      database.each(sql, (err, rows) => {
-        event.reply('getFlightLogs', (err && err.message) || rows);
-      });
-    });
-
-    database.close((err) => {
-      if (err) {
-        console.error(err.message);
-      }
-
-      console.log('Closed the database connection (Get flights).');
     });
   });
 
