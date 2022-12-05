@@ -9,11 +9,21 @@ body {
 body {
 }
 
+.logo {
+  display: inline-block;
+  margin-right: 10px;
+}
+
 a {
 }
 
 .container {
 }
+
+.section-top {
+  margin: 74px 0 30px 0 !important;
+}
+
 .importing {
   display: none;
 }
