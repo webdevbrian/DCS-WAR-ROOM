@@ -13,10 +13,33 @@ let tacviewFileName;
 let manifest;
 document.querySelector(".importing").style.display = "none";
 
-let processingModal = new bootstrap.Modal(
+let flightLogModal = new bootstrap.Modal(
   document.getElementById("flightLogModal"),
   {}
 );
+
+document.addEventListener("click", function(e){
+  let target = e.target.closest("#deleteTacviewConfirm");
+
+  //
+  // Delete tracked pilot
+  //
+  if(target) {
+    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
+    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogimports WHERE flightlog_id =' + tableRowId);
+    document.getElementById('row-' + tableRowId).outerHTML = "";
+    flightLogModal.hide();
+  }
+});
+
+let deleteTacviewModal = function(tableRowID) {
+  const deleteButton = document.getElementById('deleteTacviewConfirm');
+  deleteButton?.remove();
+  document.getElementById('flightLogModalTitle').innerHTML = 'Confirm tacview deletion';
+  document.getElementById('flightLogModalBody').innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Are you sure you want to Tacview ID #' + tableRowID + '?';
+  document.getElementById('flightLogModalFooter').appendChild(document.createElement("div")).innerHTML = '<button type="button" class="btn btn-secondary btn-danger" id="deleteTacviewConfirm">Delete</button>';
+  flightLogModal.show();
+}
 
 //
 // IPC Renderer communications
@@ -87,6 +110,9 @@ ipcRenderer.on("flightlogsDeleteFlight", () => {
         el.setAttribute('class', 'align-middle')
       });
     });
+
+    const loading = document.getElementById('loading');
+    loading?.remove();
 
     if(flightLogsTable.childElementCount > 1) {
       const noFlightLogs = document.getElementById('noFlightLogs');
@@ -226,6 +252,9 @@ function execute(command, props) {
             const noFlightLogs = document.getElementById('noFlightLogs');
             noFlightLogs?.remove();
           }
+
+          const loading = document.getElementById('loading');
+          loading?.remove();
 
           document.querySelectorAll('.flight-logs')
           .forEach(function(el) {
@@ -385,7 +414,7 @@ dialog.handler.init();
 document.querySelector("#closeModal").addEventListener(
   "click",
   e => {
-    processingModal.hide();
+    flightLogModal.hide();
     e.preventDefault();
   },
   false
@@ -399,20 +428,6 @@ document.addEventListener("click", function(e){
 
   if(target){
     tableRowId = target.id.split("-").pop();
-
-    //
-    // Delete Row from database (flightlogs and flightlogimports) TODO: Multi selection for delete via checkboxs!
-    //
-    let text;
-    if (confirm("Are you sure you want to delete Tacview #" + tableRowId + "?") == true) {
-      //
-      // Delete flight from flightlogimport and flightlog tables by flightlog_id
-      //
-      ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
-      ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogimports WHERE flightlog_id =' + tableRowId);
-      document.getElementById('row-' + tableRowId).outerHTML = "";
-    } else {
-      text = "You canceled!";
-    }
+    deleteTacviewModal(tableRowId);
   }
 });

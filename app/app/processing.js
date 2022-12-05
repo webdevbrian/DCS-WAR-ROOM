@@ -557,7 +557,7 @@ let deletePilotModal = function (tableRowID) {
   const deleteButton = document.getElementById('deletePilotConfirm');
   deleteButton?.remove();
   document.getElementById('processingModalTitle').innerHTML = 'Confirm pilot deletion';
-  document.getElementById('processingModalBody').innerHTML = 'Are you sure you want to delete pilot ID #"' + tableRowID + '"?';
+  document.getElementById('processingModalBody').innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Are you sure you want to delete pilot ID #' + tableRowID + '?';
   document.getElementById('processingModalFooter').appendChild(document.createElement("div")).innerHTML = '<button type="button" class="btn btn-secondary btn-danger" id="deletePilotConfirm">Delete</button>';
   processingModal.show();
 };
@@ -609,16 +609,14 @@ document.addEventListener("click", function (e) {
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident2;
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLogs[i].trackby;
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + pilotLogs[i].id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
-
-      // pilotTableRow.appendChild(document.createElement("td"))
-      //   .appendChild(document.createElement("div")).innerHTML = date_added;
     }
-
     document.querySelectorAll('.pilot-logs').forEach(function (el) {
       el.querySelectorAll('td').forEach(function (el) {
         el.setAttribute('class', 'align-middle');
       });
     });
+    const loading = document.getElementById('loading');
+    loading?.remove();
     if (pilotTable.childElementCount > 1) {
       const noPilots = document.getElementById('noPilots');
       noPilots?.remove();
@@ -660,6 +658,8 @@ let addPilot = function (pilot) {
         el.setAttribute('class', 'align-middle');
       });
     });
+    const loading = document.getElementById('loading');
+    loading?.remove();
     document.getElementById('identifier1').value = '';
     document.getElementById('identifier2').value = '';
     document.getElementById('trackBy').value = '';
