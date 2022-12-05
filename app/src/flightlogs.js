@@ -13,11 +13,6 @@ let tacviewFileName;
 let manifest;
 document.querySelector(".importing").style.display = "none";
 
-let flightLogModal = new bootstrap.Modal(
-  document.getElementById("flightLogModal"),
-  {}
-);
-
 document.addEventListener("click", function(e){
   let target = e.target.closest("#deleteTacviewConfirm");
 
@@ -31,6 +26,11 @@ document.addEventListener("click", function(e){
     flightLogModal.hide();
   }
 });
+
+let flightLogModal = new bootstrap.Modal(
+  document.getElementById("flightLogModal"),
+  {}
+);
 
 let deleteTacviewModal = function(tableRowID) {
   const deleteButton = document.getElementById('deleteTacviewConfirm');

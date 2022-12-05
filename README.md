@@ -13,24 +13,26 @@ A digital combat simulator flight and combat stats system powered by tacview
 ---
 
 ## **General tasks**
-[X] Build base repository
+:heavy_check_mark: Build base repository
 
-[X] Build base SQLite database for data imports and management
+:heavy_check_mark: Build base SQLite database for data imports and management
 
-[X] Run test imports of tacview exports
+:heavy_check_mark: Run test imports of tacview exports
 
 ---
 
 ## **Tooling**
-[X] Build tool for automating tacview file csv exports to `flightlogimports` table and `flightlogs` in database
+:heavy_check_mark: Build tool for automating tacview file csv exports to `flightlogimports` table and `flightlogs` in database
 
 ---
 
 ## **User interface for data management (importing and other)**
 
-[X](Create framework that utilizes bootstrap or otherwise in a HTML / web interface for interaction)
+:heavy_check_mark: (Create framework that utilizes bootstrap or otherwise in a HTML / web interface for interaction)
 
-[X](Create interface for database associations for pilot duplication)
+:heavy_check_mark: (Create interface for database associations for pilot duplication)
+
+:white_check_mark: (Create first version of interface for adding additional tacview file data (map location via drop down to start))
 
 ---
 
@@ -60,9 +62,7 @@ Below is a list of the current tables and columns currently used in the database
 
 > TABLE: **pilotdata**
 >
-> **Description**: This table tracks overall pilot data as it pertains to the system for statistics. There are some interesting columns in here that need to be talked about how they will be formatted as it will probably be confusing to people who have no idea going into this what they're looking at! So let's demystify that.
->
-> The three main columns that differ from ones like `kills` and `deaths` which should be self explanatory (this is OVERALL kills and deaths across all imported missions) are the columns `flights_flown` and `landings`. These three are dynamically updated arrays for each given tracked pilot. They are associative in that the first in the order for `aircraft_flown` will then have a tracked array slot in `flights_flown` and `landings` *so that each airframe flown by this pilot has tracked data for the amount of flights flown and landings of that airframe, not all airframes together!* I did this so that we can get more specific data about landings and flights for each specific airframe for later data comparisons and visualizations. Please note: The way this is "judged" is that a `hastakenoff` event matches a following `haslanded` event from tacview. That is what I've judged in the code as a successful and log-able flight. If the pilot takes off and doesn't land (i.e. they DIE!) welp let's not track that. You can find the accompanying part in the code to change this, and, in the future I may provide different selectable system options to calculate this to people's likings via a selection i.e. "select default flight calculation / etc".
+> **Description**: This table tracks overall pilot data as it pertains to the system for statistics.
 
 ## Quick start
 

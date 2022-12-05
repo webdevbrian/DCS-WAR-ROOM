@@ -19,11 +19,6 @@ document.querySelector("#app").style.display = "block";
                                              + '<strong>Tracked Pilots</strong>: ' + pilotLog.count;
 })();
 
-// (async () => {
-//   const flightLogData = await ipcRenderer.invoke('flightlogs', "SELECT * FROM flightlogimports WHERE primary_object_pilot LIKE '%Phrozen' COLLATE NOCASE");
-//   console.log(flightLogData);
-// })();
-
 document.querySelector(".electron-website-link").addEventListener(
   "click",
   event => {
