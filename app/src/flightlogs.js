@@ -1,7 +1,6 @@
 import "./stylesheets/main.css";
 import { ipcRenderer } from "electron";
 import jetpack from "fs-jetpack";
-import { contextIsolated } from "process";
 const fs = require('fs');
 const exec = require('child_process').exec;
 const rootPath = process.cwd();
@@ -11,6 +10,8 @@ const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
 
 let tableRowId;
 let tacviewLocation;
+let tacviewServer;
+let addedServerList;
 let tacviewFileName;
 let manifest;
 document.querySelector(".importing").style.display = "none";
@@ -23,75 +24,187 @@ let flightLogModal = new bootstrap.Modal(
   {}
 );
 
+let addedServers = function(servers){
+  addedServerList = '';
+  for(let i = 0; i < servers.length; i++) {
+    addedServerList += `<li class="server-${servers[i].id}"><span id="server-${servers[i].id}" class="btn btn-danger delete-server"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></span> ${servers[i].name}</li>`;
+  }
+
+  if (servers.length < 1) {
+    addedServerList = 'No servers added.'
+  }
+
+  return addedServerList;
+};
+
+let serverAddRemove = function(servers) {
+
+  //
+  // Hide previous controls if they exist
+  //
+  const saveServerButton = document.getElementById('saveServer');
+  const deleteTacviewButton = document.getElementById('deleteTacviewConfirm');
+  const saveTacviewButton = document.getElementById('saveTacview');
+  saveServerButton?.remove();
+  deleteTacviewButton?.remove();
+  saveTacviewButton?.remove();
+
+  document.getElementById('flightLogModalTitle').innerHTML = 'Add / Remove Server';
+  document.getElementById('flightLogModalBody').innerHTML = `
+    <h5>Currently added servers:</h5>
+    <div class="serverModalList">
+      <ul class="serverModalListUL">
+        ${addedServers(servers)}
+      </ul>
+    </div>
+    <p class="py-3 mb-0">Add a server name below for tagging purposes for your uploaded tacviews. This can be anything you want, but it is advised to keep it short and to the point and only alpha numeric.</p>
+    <div class="d-flex mb-2">
+      <table>
+        <tbody>
+          <tr id="addServerRow">
+            <td class="align-middle py-1">
+              <input class="form-control" id="serverName" placeholder='Example: HoggitTNN' />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('flightLogModalFooter').innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveServer">Add</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
+
+  flightLogModal.show();
+}
+
 let deleteTacviewModal = function(tableRowID) {
+
+  //
+  // Hide previous controls if they exist
+  //
+  const saveServerButton = document.getElementById('saveServer');
   const deleteButton = document.getElementById('deleteTacviewConfirm');
   const saveButton = document.getElementById('saveTacview');
   deleteButton?.remove();
   saveButton?.remove();
+  saveServerButton?.remove();
+
   document.getElementById('flightLogModalTitle').innerHTML = 'Confirm tacview deletion';
-  document.getElementById('flightLogModalBody').innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Are you sure you want to Tacview ID #' + tableRowID + '?';
-  document.getElementById('flightLogModalFooter').appendChild(document.createElement("div")).innerHTML = '<button type="button" class="btn btn-secondary btn-danger" id="deleteTacviewConfirm">Delete</button>';
+  document.getElementById('flightLogModalBody').innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Are you sure you want to delete Tacview ID #' + tableRowID + '?';
+  document.getElementById('flightLogModalFooter').innerHTML = '<button type="button" class="btn btn-secondary btn-danger" id="deleteTacviewConfirm">Delete</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
+
   flightLogModal.show();
 }
 
 let tacviewModalEdit = function(flightLog) {
-  const deleteButton = document.getElementById('deleteTacviewConfirm');
-  const saveButton = document.getElementById('saveTacview');
-  deleteButton?.remove();
-  saveButton?.remove();
+  (async () => {
+    try {
 
-  //
-  // Build map location dropdown and set selected options if one is saved previously
-  // NULL = none set, 0 = caucuses, 1 = nevada, 2 = normandy, 3 = persian gulf, 4 = the channel, 5 = syria, 6 = marianas, 7 = south atlantic
-  // TODO: Redo this - this was done quickly, this should be a for loop with a set of locations based on an array of locations
-  //
-  let selected,
-      selected0,
-      selected1,
-      selected2,
-      selected3,
-      selected4,
-      selected5,
-      selected6,
-      selected7 = '';
+      //
+      // Hide previous controls if they exist
+      //
+      const saveServerButton = document.getElementById('saveServer');
+      const deleteButton = document.getElementById('deleteTacviewConfirm');
+      const saveButton = document.getElementById('saveTacview');
+      deleteButton?.remove();
+      saveButton?.remove();
+      saveServerButton?.remove();
 
-  if(!flightLog['location']) {
-    selected = 'selected';
-  } else if(flightLog['location'] == 0) {
-    selected0 = 'selected';
-  } else if(flightLog['location'] == 1){
-    selected1 = 'selected';
-  } else if(flightLog['location'] == 2){
-    selected2 = 'selected';
-  } else if(flightLog['location'] == 3){
-    selected3 = 'selected';
-  } else if(flightLog['location'] == 4){
-    selected4 = 'selected';
-  } else if(flightLog['location'] == 5){
-    selected5 = 'selected';
-  } else if(flightLog['location'] == 6){
-    selected6 = 'selected';
-  } else if(flightLog['location'] == 7){
-    selected7 = 'selected';
-  };
+      //
+      // Build map location dropdown and set selected options if one is saved previously
+      // NULL = none set, 0 = caucuses, 1 = nevada, 2 = normandy, 3 = persian gulf, 4 = the channel, 5 = syria, 6 = marianas, 7 = south atlantic
+      // TODO: Redo this - this was done quickly, this should be a for loop with a set of locations based on an array of locations
+      //
+      let selected,
+          selected0,
+          selected1,
+          selected2,
+          selected3,
+          selected4,
+          selected5,
+          selected6,
+          selected7 = '';
 
-  document.getElementById('flightLogModalTitle').innerHTML = 'Editing Tacview #' + flightLog['id'];
-  document.getElementById('flightLogModalBody').innerHTML = `
-  <select id="tacviewLocation" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-    <option value="69" ${selected}>Select tacview map location</option>
-    <option value="0" ${selected0}>Caucuses</option>
-    <option value="1" ${selected1}>Nevada</option>
-    <option value="2" ${selected2}>Normandy</option>
-    <option value="3" ${selected3}>Persian Gulf</option>
-    <option value="4" ${selected4}>The Channel</option>
-    <option value="5" ${selected5}>Syria</option>
-    <option value="6" ${selected6}>Marianas Islands</option>
-    <option value="7" ${selected7}>South Atlantic</option>
-  </select>`;
+      if(!flightLog['location']) {
+        selected = 'selected';
+      } else if(flightLog['location'] == 0) {
+        selected0 = 'selected';
+      } else if(flightLog['location'] == 1){
+        selected1 = 'selected';
+      } else if(flightLog['location'] == 2){
+        selected2 = 'selected';
+      } else if(flightLog['location'] == 3){
+        selected3 = 'selected';
+      } else if(flightLog['location'] == 4){
+        selected4 = 'selected';
+      } else if(flightLog['location'] == 5){
+        selected5 = 'selected';
+      } else if(flightLog['location'] == 6){
+        selected6 = 'selected';
+      } else if(flightLog['location'] == 7){
+        selected7 = 'selected';
+      };
 
-  document.getElementById('flightLogModalFooter').appendChild(document.createElement("div")).innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveTacview">Save</button>';
+      //
+      // Build tacview server list based on user saved DCS servers
+      //
+      let select,
+          selectedOption = '';
+      const servers = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers ORDER BY id DESC');
 
-  flightLogModal.show();
+      select = `
+      <div class="row">
+        <div class="col-md-12">
+          <p>DCS Multiplayer Server:</p>
+          <select id="tacviewServer" class="form-select form-select-lg mb-3">
+            <option value="69">Select a server</option>
+      `;
+
+      for(let i = 0; i < servers.length; i++) {
+        if(servers[i].id === flightLog['server']) {
+          selectedOption = 'selected';
+        }
+
+        select += `
+          <option value="${servers[i].id}" ${selectedOption}>${servers[i].name}</option>
+        `
+      }
+
+      select += `
+          </select>
+        </div>
+      </div>
+      `;
+
+      //
+      // Populate modal with tacview editable data fields / inputs
+      //
+      document.getElementById('flightLogModalTitle').innerHTML = 'Editing Tacview #' + flightLog['id'];
+      document.getElementById('flightLogModalBody').innerHTML = `
+      <div class="row">
+        <div class="col-md-12">
+          <p>DCS Map:</p>
+          <select id="tacviewLocation" class="form-select form-select-lg mb-3">
+            <option value="69" ${selected}>Select tacview map location</option>
+            <option value="0" ${selected0}>Caucuses</option>
+            <option value="1" ${selected1}>Nevada</option>
+            <option value="2" ${selected2}>Normandy</option>
+            <option value="3" ${selected3}>Persian Gulf</option>
+            <option value="4" ${selected4}>The Channel</option>
+            <option value="5" ${selected5}>Syria</option>
+            <option value="6" ${selected6}>Marianas Islands</option>
+            <option value="7" ${selected7}>South Atlantic</option>
+          </select>
+        </div>
+      </div>
+      ${select}
+      `;
+
+      document.getElementById('flightLogModalFooter').innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveTacview">Save</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
+
+      flightLogModal.show();
+    } catch(err) {
+      console.log(err);
+    }
+  })();
 };
 
 //
@@ -152,6 +265,21 @@ async function loadFlightLogs(refresh) {
         }
 
         //
+        // Get and associate name of saved tacview server for UI if we have it
+        //
+        let serverName;
+        if(flightLogs[i].server) {
+          const server = await ipcRenderer.invoke('getServerList', 'SELECT name FROM multiplayerservers WHERE id=' + flightLogs[i].server + ' LIMIT 1');
+          if(server[0] !== undefined){ // The server was deleted and there are no results in the servers table
+            serverName = server[0].name;
+          } else {
+            serverName = 'Not set';
+          }
+        } else {
+          serverName = 'Not set';
+        }
+
+        //
         // Format dates
         //
         const import_date1 = new Date(flightLogs[i].import_date);
@@ -175,7 +303,7 @@ async function loadFlightLogs(refresh) {
           .appendChild(document.createElement("div")).innerHTML = flightLogs[i].filename
 
         flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = flightLogs[i].server;
+          .appendChild(document.createElement("div")).innerHTML = serverName;
 
         flightLogsTableRow.appendChild(document.createElement("td"))
           .appendChild(document.createElement("div")).innerHTML = location;
@@ -431,7 +559,6 @@ function execute(command, props) {
                   $flightLogID: flightId
                 });
               }
-
             });
 
             //
@@ -482,9 +609,9 @@ dialog.handler = {
       let correctFormat = tacviewFileName.substring(0,7);
 
       if(correctFormat !== 'Tacview') {
-        document.getElementById('flgihtLogModalTitle').innerHTML = 'Error importing Tacview';
-        document.getElementById('flgihtLogModalBody').innerHTML = 'It looks like the tacview file you are trying to import does not follow the normal file naming for Tacview! Please read the warning message above the "Import" button.';
-        flgihtLogModal.show();
+        document.getElementById('flightLogModalTitle').innerHTML = 'Error importing Tacview';
+        document.getElementById('flightLogModalBody').innerHTML = 'It looks like the tacview file you are trying to import does not follow the normal file naming for Tacview! Please read the warning message above the "Import" button.';
+        flightLogModal.show();
         return;
       }
 
@@ -493,9 +620,9 @@ dialog.handler = {
       //
       let dupeName;
       if(tacviewFileName === dupeName) {
-        document.getElementById('flgihtLogModalTitle').innerHTML = 'Error importing Tacview';
-        document.getElementById('flgihtLogModalBody').innerHTML = 'Warning! It looks like you are going to import a duplicate tacview file! Proceed with caution.';
-        flgihtLogModal.show();
+        document.getElementById('flightLogModalTitle').innerHTML = 'Error importing Tacview';
+        document.getElementById('flightLogModalBody').innerHTML = 'Warning! It looks like you are going to import a duplicate tacview file! Proceed with caution.';
+        flightLogModal.show();
         return;
       }
 
@@ -532,6 +659,27 @@ dialog.handler.init();
 // DOM clicks / etc
 //
 
+document.querySelector(".add-server").addEventListener(
+  "click",
+  event => {
+    (async () => {
+      try {
+
+        //
+        // Get current added servers for modal
+        //
+        const servers = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers ORDER BY id DESC');
+        serverAddRemove(servers);
+      } catch(err) {
+        console.log(err);
+      }
+    })();
+
+    event.preventDefault();
+  },
+  false
+);
+
 document.addEventListener("click", function(e){
   let target = e.target.closest("#deleteTacviewConfirm");
 
@@ -556,30 +704,77 @@ document.addEventListener("click", function(e){
     (async () => {
       try {
         tacviewLocation = document.querySelector('#tacviewLocation').value;
-        console.log('UPDATE flightlogs SET location="' + tacviewLocation +'" WHERE id=' + tableRowId);
-        const flightLog = await ipcRenderer.invoke("updateTacview", 'UPDATE flightlogs SET location=' + tacviewLocation +' WHERE id=' + tableRowId);
+        tacviewServer = document.querySelector('#tacviewServer').value;
+
+        const flightLog = await ipcRenderer.invoke("updateTacview", 'UPDATE flightlogs SET location=' + tacviewLocation +', server=' + tacviewServer + ' WHERE id=' + tableRowId);
         flightLogModal.hide();
       } catch(err) {
         console.log(err);
       }
+
       flightLogModal.hide();
       loadFlightLogs(true);
     })();
   }
 });
 
-document.querySelector("#closeModal").addEventListener(
-  "click",
-  e => {
+document.addEventListener("click", function(e){
+  let target = e.target.closest("#saveServer");
+
+  //
+  // Save server
+  //
+  if(target) {
+    (async () => {
+      try {
+        tacviewServer = document.querySelector('#serverName').value;
+
+        if(!tacviewServer){
+          return;
+        }
+
+        const currentDate = new Date().toISOString();
+        const addServer = await ipcRenderer.invoke("addServer", 'INSERT INTO multiplayerservers (name,date_added) VALUES("' + tacviewServer + '", "' + currentDate + '")');
+        const lastAddedServer = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers ORDER BY id DESC limit 1');
+
+        //
+        // Add new server to list
+        //
+        let serverListUL = document.querySelector(".serverModalListUL");
+        let serverListLI = document.createElement("li");
+        serverListUL.prepend(serverListLI);
+        serverListLI.setAttribute('class', `server-${lastAddedServer[0].id}`);
+        serverListLI.innerHTML = `<span id="server-${lastAddedServer[0].id}" class="btn btn-danger delete-server"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></span> ${tacviewServer}`;
+
+        document.querySelector('#serverName').value = '';
+        document.querySelector('#serverName').focus();
+      } catch(err) {
+        console.log(err);
+      }
+    })();
+  }
+});
+
+document.addEventListener("click", function(e){
+  let target = e.target.closest(".delete-server");
+
+  if(target){
+    const serverID = target.id.split("-").pop();
+    ipcRenderer.send("deleteServer", 'DELETE FROM multiplayerservers WHERE id =' + serverID);
+    document.querySelector('.server-' + serverID).outerHTML = "";
+  }
+});
+
+document.addEventListener("click", function(e){
+  let target = e.target.closest("#closeModal");
+
+  if(target){
+    loadFlightLogs(true);
     flightLogModal.hide();
     e.preventDefault();
-  },
-  false
-);
+  }
+});
 
-//
-// Insert BRUH meme. TODO: Fix this up.
-//
 document.addEventListener("click", function(e){
   let target = e.target.closest(".delete");
 
@@ -603,7 +798,6 @@ document.addEventListener("click", function(e){
         const flightLog = await ipcRenderer.invoke('getFlightLog', 'SELECT * FROM flightlogs WHERE id=' + tableRowId);
         tacviewLocation = flightLog[0]['location'];
         tacviewModalEdit(flightLog[0]);
-
       } catch(err) {
         console.log(err);
       }

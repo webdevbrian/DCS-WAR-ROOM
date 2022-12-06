@@ -53,6 +53,118 @@ const initIpc = (dialog) => {
   //
   // Database IPCs
   //
+  ipcMain.handle('getServerList', async (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Server list GET): ', err);
+        });
+
+        database.serialize(() => {
+          database.all(sql, (err , data) => {
+            if(err){
+              console.log('Error (Server list GET)', err);
+              return;
+            }
+            responseData = data;
+            resolve(responseData);
+            console.log("Server list GET Done");
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Server list).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Server list add db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
+  ipcMain.handle('addServer', (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database update error (addServer): ', err);
+        });
+
+        console.log('fired addServer event');
+
+        database.serialize(() => {
+          database.run(sql, (err , data) => {
+            if(err){
+              console.log('Error (addServer update)', err);
+              return;
+            }
+
+            console.log("addServer update Done");
+            responseData = data;
+            resolve(responseData);
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (addServer).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With addServer UPDATE db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
+  ipcMain.on('deleteServer', (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        console.log('Server delete fired: ', arg);
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Server Delete): ', err);
+        });
+
+        database.serialize(() => {
+          database.run(sql, (err , data) => {
+            if(err){
+              console.log(err);
+              return;
+            }
+
+            responseData = data; // If anything TODO: Respond with deleted row information
+            resolve(responseData);
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Server Delete).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Server delete db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
   ipcMain.handle('flightlogs', async (event, arg) => {
     let responseData;
 

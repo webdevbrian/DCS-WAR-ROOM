@@ -23,6 +23,32 @@ a {
   display: none;
 }
 
+#flightLogModalBody table {
+  width: 100%;
+}
+
+.serverModalList {
+  height: 100px;
+  overflow-y: scroll;
+  border: 3px solid #00b7ff;
+  padding: 7px 10px 15px 10px;
+}
+
+.serverModalList ul {
+  padding: 0 0 0 5px;
+  list-style: none;
+}
+
+.serverModalList li {
+  margin: 0 0 7px 0;
+  padding: 0;
+}
+
+.serverModalList .btn {
+  line-height: 1;
+  padding: 3px;
+}
+
 .logo {
   display: inline-block;
   margin-right: 10px;

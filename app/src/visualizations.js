@@ -4,7 +4,9 @@ import { ipcRenderer } from "electron";
 document.querySelector("#app").style.display = "block";
 
 let selectedPilot;
+let selectedServer;
 let selectedLocation;
+let selectedEvent;
 
 (async () => {
 
@@ -27,6 +29,7 @@ let selectedLocation;
     for(let i = 0; i < trackedPilotData.length; i++) {
       if(i < 1){
         allTrackPilotQuery = firstQuery;
+
         if(trackedPilotData[i].ident2 !== '') {
           allTrackPilotQuery += ' or primary_object_pilot LIKE "%' + trackedPilotData[i].ident2 + '%"';
         }
@@ -50,8 +53,11 @@ let selectedLocation;
   const allTrackedPilots = await ipcRenderer.invoke('flightlogs', query);
   console.log('all tracked pilots: ', allTrackedPilots);
 
+//
+// Populate tracked pilots dropdown
+//
 
-
+console.log(trackedPilotData);
 
 
 
