@@ -17,7 +17,7 @@
           <li class="nav-item"><a href="app.html" class="nav-link">Home</a></li>
           <li class="nav-item"><a href="#" class="nav-link active">Flightlogs</a></li>
           <li class="nav-item"><a href="processing.html" class="nav-link">Processing</a></li>
-          <li class="nav-item"><a href="#" class="nav-link">Visualizations</a></li>
+          <li class="nav-item"><a href="visualizations.html" class="nav-link">Visualizations</a></li>
           <li class="nav-item"><a href="#" class="nav-link">About</a></li>
         </ul>
       </header>
@@ -34,7 +34,7 @@
           <div class="alert alert-warning d-flex align-items-center mb-0" role="alert">
             <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
             <div>
-              Your tacview file <strong>MUST</strong> be in the standard naming. Example it must begin with: <strong>Tacview-20221116-141049</strong>. Tacview does this by default normally.
+              Your tacview file <strong>MUST</strong> begin with (example): <strong>Tacview-20221116-141049</strong>. Tacview does this normally by default.
             </div>
           </div>
         </div>
@@ -59,6 +59,7 @@
                 <tr>
                   <th scope="col">id</th>
                   <th scope="col">Tacview</th>
+                  <th scope="col">Server</th>
                   <th scope="col">Map</th>
                   <th scope="col">Import Date</th>
                   <th scope="col">Flight Date</th>
@@ -69,12 +70,12 @@
               <tbody class="flight-logs">
                 <!-- Dynamically rendered -->
                 <tr id="noFlightLogs">
-                  <td colspan="7"><div>No Flightlogs imported! Go ahead and import some above.</div></td>
+                  <td colspan="8"><div>No Flightlogs imported! Go ahead and import some above.</div></td>
                 </tr>
               </tbody>
             </table>
             <div id="loading">
-              <td colspan="7"><div><span class="spinner-border spinner-border-sm importing-text" role="status" aria-hidden="true"></span> Loading...</div></td>
+              <td colspan="8"><div><span class="spinner-border spinner-border-sm importing-text" role="status" aria-hidden="true"></span> Loading...</div></td>
             </div>
           </div>
         </div>

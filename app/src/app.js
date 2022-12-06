@@ -9,7 +9,6 @@ document.querySelector("#app").style.display = "block";
 //             how many overall deaths, how many overall kills, the most deadly munition by kill percentage
 //             the most used airframe/module by count, the most popular landed airport, the overall most wasted munition (shot but no hits via data)
 //
-
 (async () => {
   const flightLogData = await ipcRenderer.invoke('flightlogs', 'SELECT COUNT(*) AS count FROM flightlogs');
   const pilotData = await ipcRenderer.invoke('getPilots', 'SELECT COUNT(*) AS count FROM pilotdata');

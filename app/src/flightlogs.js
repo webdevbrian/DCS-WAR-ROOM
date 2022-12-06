@@ -15,34 +15,6 @@ let tacviewFileName;
 let manifest;
 document.querySelector(".importing").style.display = "none";
 
-document.addEventListener("click", function(e){
-  let target = e.target.closest("#deleteTacviewConfirm");
-
-  //
-  // Delete tracked pilot
-  //
-  if(target) {
-    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
-    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogimports WHERE flightlog_id =' + tableRowId);
-    document.getElementById('row-' + tableRowId).outerHTML = "";
-    flightLogModal.hide();
-  }
-});
-
-document.addEventListener("click", function(e){
-  let target = e.target.closest("#deleteTacviewConfirm");
-
-  //
-  // Delete tracked pilot
-  //
-  if(target) {
-    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
-    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogimports WHERE flightlog_id =' + tableRowId);
-    //document.getElementById('row-' + tableRowId).outerHTML = "";
-    flightLogModal.hide();
-  }
-});
-
 //
 // Modals
 //
@@ -101,14 +73,12 @@ let tacviewModalEdit = function(flightLog) {
     selected6 = 'selected';
   } else if(flightLog['location'] == 7){
     selected7 = 'selected';
-  }
-
-  console.log(flightLog['location']);
+  };
 
   document.getElementById('flightLogModalTitle').innerHTML = 'Editing Tacview #' + flightLog['id'];
   document.getElementById('flightLogModalBody').innerHTML = `
   <select id="tacviewLocation" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-    <option ${selected}>Select tacview map location</option>
+    <option value="69" ${selected}>Select tacview map location</option>
     <option value="0" ${selected0}>Caucuses</option>
     <option value="1" ${selected1}>Nevada</option>
     <option value="2" ${selected2}>Normandy</option>
@@ -123,30 +93,6 @@ let tacviewModalEdit = function(flightLog) {
 
   flightLogModal.show();
 };
-
-document.addEventListener("click", function(e){
-  let target = e.target.closest("#saveTacview");
-
-  //
-  // Edit tracked pilot
-  //
-  if(target) {
-    (async () => {
-      try {
-        tacviewLocation = document.querySelector('#tacviewLocation').value;
-        console.log('UPDATE flightlogs SET location="' + tacviewLocation +'" WHERE id=' + tableRowId);
-        const flightLog = await ipcRenderer.invoke("updateTacview", 'UPDATE flightlogs SET location=' + tacviewLocation +' WHERE id=' + tableRowId);
-        console.log('Save tacview row.', flightLog);
-        flightLogModal.hide();
-
-      } catch(err) {
-        console.log(err);
-      }
-      flightLogModal.hide();
-      loadFlightLogs(true);
-    })();
-  }
-});
 
 //
 // IPC Renderer communications
@@ -184,8 +130,6 @@ async function loadFlightLogs(refresh) {
       for(let i = 0; i < flightLogs.length; i++) {
 
         let location = '';
-
-        // NULL = none set, 0 = caucuses, 1 = nevada, 2 = normandy, 3 = persian gulf, 4 = the channel, 5 = syria, 6 = marianas, 7 = south atlantic
 
         if(flightLogs[i].location == '0') {
           location = 'Caucuses';
@@ -230,7 +174,10 @@ async function loadFlightLogs(refresh) {
         flightLogsTableRow.appendChild(document.createElement("td"))
           .appendChild(document.createElement("div")).innerHTML = flightLogs[i].filename
 
-          flightLogsTableRow.appendChild(document.createElement("td"))
+        flightLogsTableRow.appendChild(document.createElement("td"))
+          .appendChild(document.createElement("div")).innerHTML = flightLogs[i].server;
+
+        flightLogsTableRow.appendChild(document.createElement("td"))
           .appendChild(document.createElement("div")).innerHTML = location;
 
         flightLogsTableRow.appendChild(document.createElement("td"))
@@ -369,6 +316,27 @@ function execute(command, props) {
           const date2Month = flight_date1.getMonth() + 1;
           const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
 
+          let location = '';
+          if(flightLog.location == '0') {
+            location = 'Caucuses';
+          } else if(flightLog.location == '1') {
+            location = 'Nevada';
+          } else if(flightLog.location == '2') {
+            location = 'Normandy';
+          } else if(flightLog.location == '3') {
+            location = 'Persian Gulf';
+          } else if(flightLog.location == '4') {
+            location = 'The Channel';
+          } else if(flightLog.location == '5') {
+            location = 'Syria';
+          } else if(flightLog.location == '6') {
+            location = 'Mariana Islands';
+          } else if(flightLog.location == '7') {
+            location = 'South Atlantic';
+          } else {
+            location = 'Not set'
+          }
+
           //
           // Add Row to UI (add to top of table as table is ordered DESC sort)
           //
@@ -383,8 +351,11 @@ function execute(command, props) {
           flightLogsTableRow.appendChild(document.createElement("td"))
             .appendChild(document.createElement("div")).innerHTML = flightLog.filename;
 
-            flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = flightLog.location;
+          flightLogsTableRow.appendChild(document.createElement("td"))
+            .appendChild(document.createElement("div")).innerHTML = flightLog.server;
+
+          flightLogsTableRow.appendChild(document.createElement("td"))
+            .appendChild(document.createElement("div")).innerHTML = location;
 
           flightLogsTableRow.appendChild(document.createElement("td"))
             .appendChild(document.createElement("div")).innerHTML = date2;
@@ -560,6 +531,42 @@ dialog.handler.init();
 //
 // DOM clicks / etc
 //
+
+document.addEventListener("click", function(e){
+  let target = e.target.closest("#deleteTacviewConfirm");
+
+  //
+  // Delete tacview
+  //
+  if(target) {
+    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogs WHERE id =' + tableRowId);
+    ipcRenderer.send("deleteFlight", 'DELETE FROM flightlogimports WHERE flightlog_id =' + tableRowId);
+    document.getElementById('row-' + tableRowId).outerHTML = "";
+    flightLogModal.hide();
+  }
+});
+
+document.addEventListener("click", function(e){
+  let target = e.target.closest("#saveTacview");
+
+  //
+  // Save location for tacview
+  //
+  if(target) {
+    (async () => {
+      try {
+        tacviewLocation = document.querySelector('#tacviewLocation').value;
+        console.log('UPDATE flightlogs SET location="' + tacviewLocation +'" WHERE id=' + tableRowId);
+        const flightLog = await ipcRenderer.invoke("updateTacview", 'UPDATE flightlogs SET location=' + tacviewLocation +' WHERE id=' + tableRowId);
+        flightLogModal.hide();
+      } catch(err) {
+        console.log(err);
+      }
+      flightLogModal.hide();
+      loadFlightLogs(true);
+    })();
+  }
+});
 
 document.querySelector("#closeModal").addEventListener(
   "click",

@@ -13,5 +13,6 @@ Thumbs.db
 /app/app.js
 /app/flightlogs.js
 /app/processing.js
+/app/visualizations.js
 /app/main.js
 /app/**/*.map
