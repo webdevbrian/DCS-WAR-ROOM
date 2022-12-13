@@ -31,7 +31,7 @@ let addedServers = function(servers){
   }
 
   if (servers.length < 1) {
-    addedServerList = 'No servers added.'
+    addedServerList = '<li id="noServersAdded">No servers added.</li>'
   }
 
   return addedServerList;
@@ -159,7 +159,8 @@ let tacviewModalEdit = function(flightLog) {
       `;
 
       for(let i = 0; i < servers.length; i++) {
-        if(servers[i].id === flightLog['server']) {
+        selectedOption = '';
+        if(servers[i].id === parseInt(flightLog['server'])) {
           selectedOption = 'selected';
         }
 
@@ -230,7 +231,7 @@ ipcRenderer.on("flightlogsDeleteFlight", () => {
 //
 // Initially get all flightlogs from database
 //
-async function loadFlightLogs(refresh) {
+async function loadFlightLogs(refresh, initial) {
   (async () => {
     try {
       const flightLogs = await ipcRenderer.invoke('flightlogs', 'SELECT * FROM flightlogs ORDER BY id DESC;');
@@ -242,26 +243,19 @@ async function loadFlightLogs(refresh) {
 
       for(let i = 0; i < flightLogs.length; i++) {
 
-        let location = '';
-
-        if(flightLogs[i].location == '0') {
-          location = 'Caucuses';
-        } else if(flightLogs[i].location == '1') {
-          location = 'Nevada';
-        } else if(flightLogs[i].location == '2') {
-          location = 'Normandy';
-        } else if(flightLogs[i].location == '3') {
-          location = 'Persian Gulf';
-        } else if(flightLogs[i].location == '4') {
-          location = 'The Channel';
-        } else if(flightLogs[i].location == '5') {
-          location = 'Syria';
-        } else if(flightLogs[i].location == '6') {
-          location = 'Mariana Islands';
-        } else if(flightLogs[i].location == '7') {
-          location = 'South Atlantic';
+        //
+        // Get and associate name of saved tacview location for UI if we have it
+        //
+        let locationName;
+        if(flightLogs[i].location) {
+          const location = await ipcRenderer.invoke('getLocations', 'SELECT name FROM locations WHERE id=' + flightLogs[i].location + ' LIMIT 1');
+          if(location[0] !== undefined){ // The server was deleted and there are no results in the servers table
+            locationName = location[0].name;
+          } else {
+            locationName = 'Not set';
+          }
         } else {
-          location = 'Not set'
+          locationName = 'Not set';
         }
 
         //
@@ -306,7 +300,7 @@ async function loadFlightLogs(refresh) {
           .appendChild(document.createElement("div")).innerHTML = serverName;
 
         flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = location;
+          .appendChild(document.createElement("div")).innerHTML = locationName;
 
         flightLogsTableRow.appendChild(document.createElement("td"))
           .appendChild(document.createElement("div")).innerHTML = import_date;
@@ -335,12 +329,23 @@ async function loadFlightLogs(refresh) {
         const noFlightLogs = document.getElementById('noFlightLogs');
         noFlightLogs?.remove();
       }
+
+      //
+      // Only initialize the table on first load
+      //
+      if(initial){
+        $('#flightlogs').DataTable({
+          paging: false,
+          "order": [[0, 'desc']],
+          scrollY: 400
+        });
+      }
     } catch(err) {
       console.log(err);
     }
   })();
 }
-loadFlightLogs();
+loadFlightLogs(false, true);
 
 //
 // Get just the tacview file name, no directories and no extensions.
@@ -351,11 +356,15 @@ function getTacviewFileName(fullPath) {
   }
 }
 
+//
+// Disable UI controls so user can't click anything while the tacview command is runnning behind the scenes...
+//
 function disableUI(disable){
   if(disable){
     document.querySelector("title").innerHTML = "DCS War Room v" + manifest.version + ' !!!IMPORTING TACVIEW!!!';
-    document.querySelector(".importing").style.display = "block";
+    document.querySelector(".importing").style.display = "inline";
     document.querySelector(".import-tacview").style.display = "none";
+    document.querySelector(".add-server").classList.add("disabled");
     document.querySelector("body").style.cursor = 'wait';
     document.querySelectorAll('.nav-link')
     .forEach(function(element) {
@@ -368,7 +377,8 @@ function disableUI(disable){
   } else {
     document.querySelector("title").innerHTML = "DCS War Room v" + manifest.version;
     document.querySelector(".importing").style.display = "none";
-    document.querySelector(".import-tacview").style.display = "block";
+    document.querySelector(".import-tacview").style.display = "inline";
+    document.querySelector(".add-server").classList.remove("disabled")
     document.querySelector("body").style.cursor = 'default';
     document.querySelectorAll('.nav-link')
     .forEach(function(element) {
@@ -410,7 +420,7 @@ function execute(command, props) {
         // Get and convert tacview file date from filename to ISO
         //
         let date = fileName.substring(0, 23);
-        date = date.substring(8);
+            date = date.substring(8);
         let dateYear = date.slice(0, 4);
         let dateMonth = date.slice(4,6);
         let dateDay = date.slice(6,8);
@@ -465,6 +475,11 @@ function execute(command, props) {
             location = 'Not set'
           }
 
+          let server = '';
+          if(flightLog.server === null) {
+            server = 'Not set'
+          }
+
           //
           // Add Row to UI (add to top of table as table is ordered DESC sort)
           //
@@ -480,7 +495,7 @@ function execute(command, props) {
             .appendChild(document.createElement("div")).innerHTML = flightLog.filename;
 
           flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = flightLog.server;
+            .appendChild(document.createElement("div")).innerHTML = server;
 
           flightLogsTableRow.appendChild(document.createElement("td"))
             .appendChild(document.createElement("div")).innerHTML = location;
@@ -707,6 +722,8 @@ document.addEventListener("click", function(e){
         tacviewServer = document.querySelector('#tacviewServer').value;
 
         const flightLog = await ipcRenderer.invoke("updateTacview", 'UPDATE flightlogs SET location=' + tacviewLocation +', server=' + tacviewServer + ' WHERE id=' + tableRowId);
+        const flightLogImports = await ipcRenderer.invoke("updateTacview", 'UPDATE flightlogimports SET location=' + tacviewLocation +', server=' + tacviewServer + ' WHERE flightlog_id=' + tableRowId);
+
         flightLogModal.hide();
       } catch(err) {
         console.log(err);
@@ -740,6 +757,8 @@ document.addEventListener("click", function(e){
         //
         // Add new server to list
         //
+        const noServersAdded = document.getElementById('noServersAdded');
+        noServersAdded?.remove();
         let serverListUL = document.querySelector(".serverModalListUL");
         let serverListLI = document.createElement("li");
         serverListUL.prepend(serverListLI);
@@ -797,6 +816,7 @@ document.addEventListener("click", function(e){
       try {
         const flightLog = await ipcRenderer.invoke('getFlightLog', 'SELECT * FROM flightlogs WHERE id=' + tableRowId);
         tacviewLocation = flightLog[0]['location'];
+        tacviewServer = flightLog[0]['server'];
         tacviewModalEdit(flightLog[0]);
       } catch(err) {
         console.log(err);

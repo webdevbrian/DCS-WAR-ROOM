@@ -12,10 +12,13 @@ document.querySelector("#app").style.display = "block";
 (async () => {
   const flightLogData = await ipcRenderer.invoke('flightlogs', 'SELECT COUNT(*) AS count FROM flightlogs');
   const pilotData = await ipcRenderer.invoke('getPilots', 'SELECT COUNT(*) AS count FROM pilotdata');
+  const serverData = await ipcRenderer.invoke('getServerList', 'SELECT COUNT(*) AS count FROM multiplayerservers');
   const flightLog = flightLogData[0];
   const pilotLog = pilotData[0];
+  const servers = serverData[0];
   document.querySelector("#stats").innerHTML = '<strong>Flight Logs</strong>: ' + flightLog.count + '<br/>'
-                                             + '<strong>Tracked Pilots</strong>: ' + pilotLog.count;
+                                             + '<strong>Tracked Pilots</strong>: ' + pilotLog.count + '<br/>'
+                                             + '<strong>Tracked Servers</strong>: ' + servers.count;
 })();
 
 document.querySelector(".electron-website-link").addEventListener(

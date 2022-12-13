@@ -53,6 +53,78 @@ const initIpc = (dialog) => {
   //
   // Database IPCs
   //
+  ipcMain.handle('getEvents', async (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Events GET): ', err);
+        });
+
+        database.serialize(() => {
+          database.all(sql, (err , data) => {
+            if(err){
+              console.log('Error (Events GET)', err);
+              return;
+            }
+            responseData = data;
+            resolve(responseData);
+            console.log("Events GET Done");
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Events).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Events GET db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
+  ipcMain.handle('getLocations', async (event, arg) => {
+    let responseData;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const sql = arg;
+        const database = new sqlite3.Database(dbPath, (err) => {
+          if (err) console.error('Database opening error (Locations GET): ', err);
+        });
+
+        database.serialize(() => {
+          database.all(sql, (err , data) => {
+            if(err){
+              console.log('Error (Locations GET)', err);
+              return;
+            }
+            responseData = data;
+            resolve(responseData);
+            console.log("Locations GET Done");
+          });
+
+          database.close((err) => {
+            if (err) {
+              console.error(err.message);
+            }
+
+            console.log('Closed the database connection (Locations).');
+          });
+        });
+      } catch (error) {
+        console.log(`Error With Locations GET db query: \r\n ${error}`)
+        reject();
+      }
+    });
+  });
+
   ipcMain.handle('getServerList', async (event, arg) => {
     let responseData;
 
@@ -83,7 +155,7 @@ const initIpc = (dialog) => {
           });
         });
       } catch (error) {
-        console.log(`Error With Server list add db query: \r\n ${error}`)
+        console.log(`Error With Server list GET db query: \r\n ${error}`)
         reject();
       }
     });

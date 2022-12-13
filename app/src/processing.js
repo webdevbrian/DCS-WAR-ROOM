@@ -101,9 +101,12 @@ document.addEventListener("click", function(e){
       const noPilots = document.getElementById('noPilots');
       noPilots?.remove();
     }
+
+    $('#trackedPilots').DataTable();
   } catch(err) {
     console.log(err);
   }
+
 })();
 
 //
@@ -112,6 +115,10 @@ document.addEventListener("click", function(e){
 //
 let addPilot = function(pilot) {
   (async () => {
+
+    if(!pilot){
+      return;
+    }
 
     //
     // Add pilot to database

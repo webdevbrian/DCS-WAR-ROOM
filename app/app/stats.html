@@ -3,56 +3,60 @@
   <head>
     <meta charset="utf-8" />
     <title></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+    <!-- The page supports both dark and light color schemes,
+         and the page author prefers / default is light. -->
+         <meta name="color-scheme" content="light dark">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div id="app" class="container py-4">
-      <header class="d-flex flex-wrap justify-content-center py-3 px-5 mb-4 border-bottom navbar fixed-top bg-light">
+      <header class="d-flex flex-wrap justify-content-center py-3 px-5 mb-4 border-bottom navbar fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
           <div class="logo"></div>
           <span class="fs-4">DCS War Room</span>
         </div>
 
-        <ul class="nav nav-pills">
+        <ul class="navbar-nav">
           <li class="nav-item"><a href="app.html" class="nav-link">Home</a></li>
           <li class="nav-item"><a href="flightlogs.html" class="nav-link">Flight Logs</a></li>
           <li class="nav-item"><a href="processing.html" class="nav-link">Processing</a></li>
-          <li class="nav-item"><a href="#" class="nav-link active">Visualizations</a></li>
+          <li class="nav-item"><a href="#" class="nav-link active">Stats</a></li>
           <li class="nav-item"><a href="#" class="nav-link">About</a></li>
         </ul>
       </header>
 
-      <div class="p-5 mb-4 mt-5 bg-light rounded-3 shadow rounded section-top">
+      <div class="p-5 mb-4 mt-5 bg-dark rounded-3 shadow rounded section-top">
         <div class="container-fluid">
-          <h1 class="display-5 fw-bold">Visualizations</h1>
-          <p class="col-md-8 fs-4">Below are various statistics, visualizations and sorting based on your provided tacviews processed.</p>
+          <h1 class="display-5 fw-bold">Stats</h1>
+          <p class="col-md-8 fs-4">Below are various statistics, visualizations and sorting based on your provided tacviews, tagged servers and tracked pilots.</p>
         </div>
       </div>
 
       <div class="row align-items-md-stretch">
         <div class="col-md-3">
           <p>Select a pilot</p>
-          <select id="pilotSelection" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-            <option value="69">All Tracked Pilots</option>
+          <select id="pilotSelect" class="form-select form-select-lg mb-3">
+            <option value="69">Any</option>
           </select>
+          <button class="btn btn-primary btn-lg" id="search" type="button">Search</button>
         </div>
         <div class="col-md-3">
           <p>Select a server</p>
-          <select id="locationSelect" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-            <option value="69">All Servers</option>
+          <select id="serverSelect" class="form-select form-select-lg mb-3">
+            <option value="69">Any</option>
           </select>
         </div>
         <div class="col-md-3">
           <p>Select a location</p>
-          <select id="locationSelect" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-            <option value="69">All Locations</option>
+          <select id="locationSelect" class="form-select form-select-lg mb-3">
+            <option value="69">Any</option>
           </select>
         </div>
         <div class="col-md-3">
           <p>Select an event</p>
-          <select id="locationSelect" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
-            <option value="69">All Events</option>
+          <select id="eventSelect" class="form-select form-select-lg mb-3">
+            <option value="69">Any</option>
           </select>
         </div>
       </div>
@@ -90,6 +94,6 @@
     </svg>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script src="visualizations.js"></script>
+    <script src="stats.js"></script>
   </body>
 </html>
