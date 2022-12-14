@@ -3,6 +3,7 @@ export function getCSV(file) {
   return new Promise(function(resolve, reject) {
     require('fs').readFile(file, "utf8", function(err, data) {
       if (err) {
+        console.log('CSV READ ERROR!', err);
         reject(err);
       } else {
         let lines = data.split('\n'),

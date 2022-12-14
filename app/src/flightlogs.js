@@ -75,6 +75,25 @@ let serverAddRemove = function(servers) {
   flightLogModal.show();
 }
 
+let errorTacviewImportConfirm = function(tableRowID) {
+
+  //
+  // Hide previous controls if they exist
+  //
+  const saveServerButton = document.getElementById('saveServer');
+  const deleteButton = document.getElementById('deleteTacviewConfirm');
+  const saveButton = document.getElementById('saveTacview');
+  deleteButton?.remove();
+  saveButton?.remove();
+  saveServerButton?.remove();
+
+  document.getElementById('flightLogModalTitle').innerHTML = 'Error importing tacview!';
+  document.getElementById('flightLogModalBody').innerHTML = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Oh snap! Tacview ran into an issue. Retrying in 5 seconds...';
+  document.getElementById('flightLogModalFooter').innerHTML = '<button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
+
+  flightLogModal.show();
+}
+
 let deleteTacviewModal = function(tableRowID) {
 
   //
@@ -330,16 +349,16 @@ async function loadFlightLogs(refresh, initial) {
         noFlightLogs?.remove();
       }
 
-      //
-      // Only initialize the table on first load
-      //
-      if(initial){
-        $('#flightlogs').DataTable({
-          paging: false,
-          "order": [[0, 'desc']],
-          scrollY: 400
-        });
-      }
+      // //
+      // // Only initialize the table on first load
+      // //
+      // if(initial && flightLogs.length > 1){
+      //   $('#flightlogs').DataTable({
+      //     paging: false,
+      //     "order": [[0, 'desc']],
+      //     scrollY: 400
+      //   });
+      // }
     } catch(err) {
       console.log(err);
     }
@@ -439,154 +458,167 @@ function execute(command, props) {
         // After successful import delete the old CSV file for cleanup
         //
         (async () => {
-          const flightLogData = await ipcRenderer.invoke('addFlightLog', 'INSERT INTO flightlogs (filename, import_date, flight_date) VALUES("' + tacviewFileName + '", "' + currentDate + '", "' + importDate + '");');
-          const flightLog = flightLogData[0];
-          flightId = flightLog.id;
-
-          //
-          // Format dates
-          //
-          const date1 = new Date(flightLog.import_date);
-          const date1Month = date1.getMonth() + 1;
-          const date2 = date1.getFullYear()+'-' +('0' + date1Month).substr(-2) + '-' + ('0' + date1.getDate()).substr(-2) + ' @ ' + ('0' + date1.getHours()).substr(-2) + ':' + ('0' + date1.getMinutes()).substr(-2);
-
-          const flight_date1 = new Date(flightLog.flight_date);
-          const date2Month = flight_date1.getMonth() + 1;
-          const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
-
-          let location = '';
-          if(flightLog.location == '0') {
-            location = 'Caucuses';
-          } else if(flightLog.location == '1') {
-            location = 'Nevada';
-          } else if(flightLog.location == '2') {
-            location = 'Normandy';
-          } else if(flightLog.location == '3') {
-            location = 'Persian Gulf';
-          } else if(flightLog.location == '4') {
-            location = 'The Channel';
-          } else if(flightLog.location == '5') {
-            location = 'Syria';
-          } else if(flightLog.location == '6') {
-            location = 'Mariana Islands';
-          } else if(flightLog.location == '7') {
-            location = 'South Atlantic';
-          } else {
-            location = 'Not set'
-          }
-
-          let server = '';
-          if(flightLog.server === null) {
-            server = 'Not set'
-          }
-
-          //
-          // Add Row to UI (add to top of table as table is ordered DESC sort)
-          //
-          let flightLogsTable = document.querySelector(".flight-logs");
-          let flightLogsTableRow = document.createElement("tr");
-
-          flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild).setAttribute('id', 'row-' + flightLog.id);
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = flightLog.id;
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = flightLog.filename;
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = server;
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = location;
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = date2;
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = flight_date;
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLog.id + '" class="btn btn-secondary edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"><path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z"/></svg></button>';
-
-          flightLogsTableRow.appendChild(document.createElement("td"))
-            .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLog.id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
-
-          if(flightLogsTable.childElementCount > 1) {
-            const noFlightLogs = document.getElementById('noFlightLogs');
-            noFlightLogs?.remove();
-          }
-
-          const loading = document.getElementById('loading');
-          loading?.remove();
-
-          document.querySelectorAll('.flight-logs')
-          .forEach(function(el) {
-            el.querySelectorAll('td').forEach(function(el) {
-              el.setAttribute('class', 'align-middle')
-            });
-          });
 
           //
           // Insert CSV rendered from Tacview generation into flightlogimports
           // + Add flightlog id for inserted flight log into flightlogimport flightlog_id column
           //
           let CSVFileLocation = rootPath + '\\' + tacviewFileName + '.csv';
+          console.log('CSV:', CSVFileLocation);
           let csvPromise = getCSV(CSVFileLocation);
           csvPromise.then(function(result) {
+            console.log('CSV log result:', result);
 
             const database = new sqlite3.Database(dbPath, (err) => {
               if (err) console.error('Database opening error (Flight Log Import): ', err);
             });
 
             database.serialize(function() {
+              (async () => {
+                const flightLogData = await ipcRenderer.invoke('addFlightLog', 'INSERT INTO flightlogs (filename, import_date, flight_date) VALUES("' + tacviewFileName + '", "' + currentDate + '", "' + importDate + '");');
+                const flightLog = flightLogData[0];
+                flightId = flightLog.id;
 
-              //
-              // Insert items from CSV into flightlogimports table
-              //
-              for(let i = 0; i < result.length; i++) {
-                let log = result[i];
-                database.run("INSERT INTO flightlogimports"
-                  + " (mission_time, primary_object_id, primary_object_name, primary_object_coalition, primary_object_pilot, primary_object_registration, primary_object_squawk, event, occurences, secondary_object_id, secondary_object_name, secondary_object_coalition, secondary_object_pilot, secondary_object_registration, secondary_object_squawk, relevant_object_id, relevant_object_name, relevant_object_coalition, relevant_object_pilot, relevant_object_registration, relevant_object_squawk, flightlog_id) VALUES"
-                  + " ($missionTime, $primaryObjectID, $primaryObjectName, $PrimaryObjectCoalition, $PrimaryObjectPilot, $PrimaryObjectRegistration, $PrimaryObjectSquawk, $Event, $Occurences, $SecondaryObjectID, $SecondaryObjectName, $SecondaryObjectCoalition, $SecondaryObjectPilot, $SecondaryObjectRegistration, $SecondaryObjectSquawk, $RelevantObjectID, $RelevantObjectName, $RelevantObjectCoalition, $RelevantObjectPilot, $RelevantObjectRegistration, $RelevantObjectSquawk, $flightLogID)",
-                {
-                  $missionTime: log.missionTime,
-                  $primaryObjectID: log.primaryObjectID,
-                  $primaryObjectName: log.primaryObjectName,
-                  $PrimaryObjectCoalition: log.PrimaryObjectCoalition,
-                  $PrimaryObjectPilot: log.PrimaryObjectPilot,
-                  $PrimaryObjectRegistration: log.PrimaryObjectRegistration,
-                  $PrimaryObjectSquawk: log.PrimaryObjectSquawk,
-                  $Event: log.Event,
-                  $Occurences: log.Occurences,
-                  $SecondaryObjectID: log.SecondaryObjectID,
-                  $SecondaryObjectName: log.SecondaryObjectName,
-                  $SecondaryObjectCoalition: log.SecondaryObjectCoalition,
-                  $SecondaryObjectPilot: log.SecondaryObjectPilot,
-                  $SecondaryObjectRegistration: log.SecondaryObjectRegistration,
-                  $SecondaryObjectSquawk: log.SecondaryObjectSquawk,
-                  $RelevantObjectID: log.RelevantObjectID,
-                  $RelevantObjectName: log.RelevantObjectName,
-                  $RelevantObjectCoalition: log.RelevantObjectCoalition,
-                  $RelevantObjectPilot: log.RelevantObjectPilot,
-                  $RelevantObjectRegistration: log.RelevantObjectRegistration,
-                  $RelevantObjectSquawk: log.RelevantObjectSquawk,
-                  $flightLogID: flightId
+                //
+                // Format dates
+                //
+                const date1 = new Date(flightLog.import_date);
+                const date1Month = date1.getMonth() + 1;
+                const date2 = date1.getFullYear()+'-' +('0' + date1Month).substr(-2) + '-' + ('0' + date1.getDate()).substr(-2) + ' @ ' + ('0' + date1.getHours()).substr(-2) + ':' + ('0' + date1.getMinutes()).substr(-2);
+
+                const flight_date1 = new Date(flightLog.flight_date);
+                const date2Month = flight_date1.getMonth() + 1;
+                const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
+
+                let location = '';
+                if(flightLog.location == '0') {
+                  location = 'Caucuses';
+                } else if(flightLog.location == '1') {
+                  location = 'Nevada';
+                } else if(flightLog.location == '2') {
+                  location = 'Normandy';
+                } else if(flightLog.location == '3') {
+                  location = 'Persian Gulf';
+                } else if(flightLog.location == '4') {
+                  location = 'The Channel';
+                } else if(flightLog.location == '5') {
+                  location = 'Syria';
+                } else if(flightLog.location == '6') {
+                  location = 'Mariana Islands';
+                } else if(flightLog.location == '7') {
+                  location = 'South Atlantic';
+                } else {
+                  location = 'Not set'
+                }
+
+                let server = '';
+                if(flightLog.server === null) {
+                  server = 'Not set'
+                }
+
+                //
+                // Add Row to UI (add to top of table as table is ordered DESC sort)
+                //
+                let flightLogsTable = document.querySelector(".flight-logs");
+                let flightLogsTableRow = document.createElement("tr");
+
+                flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild).setAttribute('id', 'row-' + flightLog.id);
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = flightLog.id;
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = flightLog.filename;
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = server;
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = location;
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = date2;
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = flight_date;
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLog.id + '" class="btn btn-secondary edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"><path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z"/></svg></button>';
+
+                flightLogsTableRow.appendChild(document.createElement("td"))
+                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLog.id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
+
+                if(flightLogsTable.childElementCount > 1) {
+                  const noFlightLogs = document.getElementById('noFlightLogs');
+                  noFlightLogs?.remove();
+                }
+
+                const loading = document.getElementById('loading');
+                loading?.remove();
+
+                document.querySelectorAll('.flight-logs')
+                .forEach(function(el) {
+                  el.querySelectorAll('td').forEach(function(el) {
+                    el.setAttribute('class', 'align-middle')
+                  });
                 });
-              }
+
+                //
+                // Insert items from CSV into flightlogimports table
+                //
+                for(let i = 0; i < result.length; i++) {
+                  let log = result[i];
+                  database.run("INSERT INTO flightlogimports"
+                    + " (mission_time, primary_object_id, primary_object_name, primary_object_coalition, primary_object_pilot, primary_object_registration, primary_object_squawk, event, occurences, secondary_object_id, secondary_object_name, secondary_object_coalition, secondary_object_pilot, secondary_object_registration, secondary_object_squawk, relevant_object_id, relevant_object_name, relevant_object_coalition, relevant_object_pilot, relevant_object_registration, relevant_object_squawk, flightlog_id) VALUES"
+                    + " ($missionTime, $primaryObjectID, $primaryObjectName, $PrimaryObjectCoalition, $PrimaryObjectPilot, $PrimaryObjectRegistration, $PrimaryObjectSquawk, $Event, $Occurences, $SecondaryObjectID, $SecondaryObjectName, $SecondaryObjectCoalition, $SecondaryObjectPilot, $SecondaryObjectRegistration, $SecondaryObjectSquawk, $RelevantObjectID, $RelevantObjectName, $RelevantObjectCoalition, $RelevantObjectPilot, $RelevantObjectRegistration, $RelevantObjectSquawk, $flightLogID)",
+                  {
+                    $missionTime: log.missionTime,
+                    $primaryObjectID: log.primaryObjectID,
+                    $primaryObjectName: log.primaryObjectName,
+                    $PrimaryObjectCoalition: log.PrimaryObjectCoalition,
+                    $PrimaryObjectPilot: log.PrimaryObjectPilot,
+                    $PrimaryObjectRegistration: log.PrimaryObjectRegistration,
+                    $PrimaryObjectSquawk: log.PrimaryObjectSquawk,
+                    $Event: log.Event,
+                    $Occurences: log.Occurences,
+                    $SecondaryObjectID: log.SecondaryObjectID,
+                    $SecondaryObjectName: log.SecondaryObjectName,
+                    $SecondaryObjectCoalition: log.SecondaryObjectCoalition,
+                    $SecondaryObjectPilot: log.SecondaryObjectPilot,
+                    $SecondaryObjectRegistration: log.SecondaryObjectRegistration,
+                    $SecondaryObjectSquawk: log.SecondaryObjectSquawk,
+                    $RelevantObjectID: log.RelevantObjectID,
+                    $RelevantObjectName: log.RelevantObjectName,
+                    $RelevantObjectCoalition: log.RelevantObjectCoalition,
+                    $RelevantObjectPilot: log.RelevantObjectPilot,
+                    $RelevantObjectRegistration: log.RelevantObjectRegistration,
+                    $RelevantObjectSquawk: log.RelevantObjectSquawk,
+                    $flightLogID: flightId
+                  });
+                }
+
+
+                //
+                // Delete the CSV file
+                //
+                if(CSVFileLocation) {
+                  fs.unlinkSync(CSVFileLocation);
+                }
+
+                //
+                // Enable UI
+                //
+                disableUI(false);
+                console.log('Fired CSV import queries:', result.length);
+              })();
             });
-
-            //
-            // Delete the CSV file
-            //
-            fs.unlinkSync(CSVFileLocation);
-
-            //
-            // Enable UI
-            //
-            disableUI(false);
-            console.log('Fired CSV import queries:', result.length);
-          });
+          }).catch(function(error) {
+            console.log('Tacview was not ready, retrying in 5 seconds...', error);
+            setTimeout(() => {
+              execute(command, ['tacview', tacviewFileName]);
+              disableUI(true);
+            }, 5000);
+          })
         })();
       }
     }
