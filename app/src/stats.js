@@ -22,13 +22,21 @@ let selectedEvent;
   let pilotSelectedOption = '';
   const pilotSelectEl = document.querySelector('#pilotSelect');
 
-  for(let i = 0; i < trackedPilotData.length; i++) {
+  if(trackedPilotData.length < 1) {
     const pilotSelectedOption = document.createElement('option');
-    const selectName = document.createTextNode(trackedPilotData[i].trackby);
+    const selectName = document.createTextNode('No pilots added!');
     pilotSelectedOption.appendChild(selectName);
-    pilotSelectedOption.setAttribute('value',`${trackedPilotData[i].id}`);
+    pilotSelectedOption.setAttribute('value',`69`);
     pilotSelectEl.appendChild(pilotSelectedOption);
-  };
+  } else {
+    for(let i = 0; i < trackedPilotData.length; i++) {
+      const pilotSelectedOption = document.createElement('option');
+      const selectName = document.createTextNode(trackedPilotData[i].trackby);
+      pilotSelectedOption.appendChild(selectName);
+      pilotSelectedOption.setAttribute('value',`${trackedPilotData[i].id}`);
+      pilotSelectEl.appendChild(pilotSelectedOption);
+    };
+  }
 
   //
   // Populate servers dropdown
@@ -63,17 +71,17 @@ let selectedEvent;
   //
   // Populate events dropdown
   //
-  const eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events');
-  let eventSelectedOption = '';
-  const eventSelectEl = document.querySelector('#eventSelect')
+  // const eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events');
+  // let eventSelectedOption = '';
+  // const eventSelectEl = document.querySelector('#eventSelect')
 
-  for(let i = 0; i < eventData.length; i++) {
-    const eventSelectedOption = document.createElement('option');
-    const selectName = document.createTextNode(eventData[i].prettyname);
-    eventSelectedOption.appendChild(selectName);
-    eventSelectedOption.setAttribute('value',`${eventData[i].name}`);
-    eventSelectEl.appendChild(eventSelectedOption);
-  }
+  // for(let i = 0; i < eventData.length; i++) {
+  //   const eventSelectedOption = document.createElement('option');
+  //   const selectName = document.createTextNode(eventData[i].prettyname);
+  //   eventSelectedOption.appendChild(selectName);
+  //   eventSelectedOption.setAttribute('value',`${eventData[i].name}`);
+  //   eventSelectEl.appendChild(eventSelectedOption);
+  // }
 
   document.querySelector("#search").addEventListener(
     "click",
@@ -87,7 +95,7 @@ let selectedEvent;
       selectedPilot = document.querySelector('#pilotSelect').value;
       selectedServer = document.querySelector('#serverSelect').value;
       selectedLocation = document.querySelector('#locationSelect').value;
-      selectedEvent = document.querySelector('#eventSelect').value;
+      // selectedEvent = document.querySelector('#eventSelect').value;
 
       (async () => {
         //

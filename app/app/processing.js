@@ -610,7 +610,10 @@ document.addEventListener("click", function (e) {
       pilotTable.appendChild(pilotTableRow).setAttribute('id', 'row-' + pilotLogs[i].id);
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLogs[i].id;
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident1;
-      pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident2;
+
+      // pilotTableRow.appendChild(document.createElement("td"))
+      //   .appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident2;
+
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLogs[i].trackby;
       pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + pilotLogs[i].id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
     }
@@ -644,7 +647,7 @@ let addPilot = function (pilot) {
     //
     // Add pilot to database
     //
-    const pilotData = await electron__WEBPACK_IMPORTED_MODULE_1__.ipcRenderer.invoke('addPilot', 'INSERT INTO pilotdata (ident1, ident2, trackby, date_added) VALUES("' + pilot[0] + '", "' + pilot[1] + '", "' + pilot[2] + '", "' + pilot[3] + '");');
+    const pilotData = await electron__WEBPACK_IMPORTED_MODULE_1__.ipcRenderer.invoke('addPilot', 'INSERT INTO pilotdata (ident1, trackby, date_added) VALUES("' + pilot[0] + '", "' + pilot[1] + '", "' + pilot[2] + '");');
     const pilotLog = pilotData[0];
 
     //
@@ -655,7 +658,10 @@ let addPilot = function (pilot) {
     pilotTable.insertBefore(pilotTableRow, pilotTable.firstChild).setAttribute('id', 'row-' + pilotLog['id']);
     pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLog['id'];
     pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLog['ident1'];
-    pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLog['ident2'];
+
+    // pilotTableRow.appendChild(document.createElement("td"))
+    //   .appendChild(document.createElement("div")).innerHTML = pilotLog['ident2'];
+
     pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = pilotLog['trackby'];
     pilotTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + pilotLog['id'] + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
     if (pilotTable.childElementCount > 1) {
@@ -670,7 +676,7 @@ let addPilot = function (pilot) {
     const loading = document.getElementById('loading');
     loading?.remove();
     document.getElementById('identifier1').value = '';
-    document.getElementById('identifier2').value = '';
+    // document.getElementById('identifier2').value = '';
     document.getElementById('trackBy').value = '';
   })();
 };
@@ -683,7 +689,7 @@ document.querySelector("#addPilot").addEventListener("click", e => {
   // Add pilot for tracking
   //
   let identifier1 = document.getElementById('identifier1').value;
-  let identifier2 = document.getElementById('identifier2').value;
+  // let identifier2 = document.getElementById('identifier2').value;
   let trackBy = document.getElementById('trackBy').value;
   let dateAdded = new Date().toISOString();
   if (!identifier1 || !trackBy) {
@@ -692,7 +698,9 @@ document.querySelector("#addPilot").addEventListener("click", e => {
     processingModal.show();
     return;
   } else {
-    let pilot = [identifier1, identifier2, trackBy, dateAdded];
+    let pilot = [identifier1,
+    // identifier2,
+    trackBy, dateAdded];
     addPilot(pilot);
   }
   e.preventDefault();

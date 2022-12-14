@@ -77,8 +77,8 @@ document.addEventListener("click", function(e){
       pilotTableRow.appendChild(document.createElement("td"))
         .appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident1;
 
-      pilotTableRow.appendChild(document.createElement("td"))
-        .appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident2;
+      // pilotTableRow.appendChild(document.createElement("td"))
+      //   .appendChild(document.createElement("div")).innerHTML = pilotLogs[i].ident2;
 
       pilotTableRow.appendChild(document.createElement("td"))
         .appendChild(document.createElement("div")).innerHTML = pilotLogs[i].trackby;
@@ -123,7 +123,7 @@ let addPilot = function(pilot) {
     //
     // Add pilot to database
     //
-    const pilotData = await ipcRenderer.invoke('addPilot', 'INSERT INTO pilotdata (ident1, ident2, trackby, date_added) VALUES("' + pilot[0] + '", "' + pilot[1] + '", "' + pilot[2] + '", "' + pilot[3] + '");');
+    const pilotData = await ipcRenderer.invoke('addPilot', 'INSERT INTO pilotdata (ident1, trackby, date_added) VALUES("' + pilot[0] + '", "' + pilot[1] + '", "' + pilot[2] + '");');
     const pilotLog = pilotData[0];
 
     //
@@ -140,8 +140,8 @@ let addPilot = function(pilot) {
     pilotTableRow.appendChild(document.createElement("td"))
       .appendChild(document.createElement("div")).innerHTML = pilotLog['ident1'];
 
-    pilotTableRow.appendChild(document.createElement("td"))
-      .appendChild(document.createElement("div")).innerHTML = pilotLog['ident2'];
+    // pilotTableRow.appendChild(document.createElement("td"))
+    //   .appendChild(document.createElement("div")).innerHTML = pilotLog['ident2'];
 
     pilotTableRow.appendChild(document.createElement("td"))
       .appendChild(document.createElement("div")).innerHTML = pilotLog['trackby'];
@@ -165,7 +165,7 @@ let addPilot = function(pilot) {
     loading?.remove();
 
     document.getElementById('identifier1').value = '';
-    document.getElementById('identifier2').value = '';
+    // document.getElementById('identifier2').value = '';
     document.getElementById('trackBy').value = '';
   })();
 }
@@ -187,7 +187,7 @@ document.querySelector("#addPilot").addEventListener(
     // Add pilot for tracking
     //
     let identifier1 = document.getElementById('identifier1').value;
-    let identifier2 = document.getElementById('identifier2').value;
+    // let identifier2 = document.getElementById('identifier2').value;
     let trackBy = document.getElementById('trackBy').value;
     let dateAdded = new Date().toISOString();
 
@@ -199,7 +199,7 @@ document.querySelector("#addPilot").addEventListener(
     } else {
       let pilot = [
         identifier1,
-        identifier2,
+        // identifier2,
         trackBy,
         dateAdded
       ];
