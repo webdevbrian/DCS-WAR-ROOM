@@ -11,15 +11,117 @@ let selectedEvent;
 (async () => {
 
   //
-  // Build ALL tracked pilot query (Default)
+  // All queries TODO: Refactor
   //
-  let masterQuery;
+  let masterQuery = '';
+  let serverQuery = '';
+  let eventQuery = '';
+  let locationQuery = '';
+
+  //
+  // Set up charts
+  //
+  let kdChart = document.getElementById("killDeathChart");
+  let killDeathChart = new Chart(kdChart, {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: '',
+        data: [],
+        borderWidth: 3,
+        backgroundColor: [
+          'rgb(232, 42, 25)'
+        ]
+      },
+      {
+        label: '',
+        data: [],
+        borderWidth: 3,
+        backgroundColor: [
+          'rgb(51, 207, 70)'
+        ]
+      }
+    ]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      },
+      ticks: {
+        precision:0
+      },
+      maintainAspectRatio: false
+    }
+  });
+
+  let mchart = document.getElementById("munitionsChart");
+  let munitionChart = new Chart(mchart, {
+    type: 'doughnut',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Used',
+        data: [],
+        backgroundColor: [
+          'rgb(255, 99, 132)',
+          'rgb(54, 162, 235)',
+          'rgb(255, 205, 86)',
+          'rgb(232, 42, 25)',
+          'rgb(51, 207, 70)',
+          'rgb(49, 175, 52)',
+          'rgb(128, 186, 237)',
+          'rgb(204, 167, 158)',
+          'rgb(123, 194, 212)',
+          'rgb(239, 142, 220)',
+          'rgb(89, 1, 37)',
+          'rgb(225, 238, 50)',
+          'rgb(153, 172, 164)',
+          'rgb(208, 12, 123)',
+          'rgb(138, 123, 247)'
+        ],
+        hoverOffset: 20
+      }
+      ]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            display: false
+          },
+          grid: {
+            display:false
+          }
+        }
+      },
+      layout: {
+        padding: 20
+      },
+      plugins: {
+        datalabels: {
+          borderWidth: 5,
+          borderColor: "white",
+          borderRadius: 8,
+          // color: 0,
+          font: {
+            weight: "bold"
+          },
+          backgroundColor: "lightgray"
+        }
+      },
+      maintainAspectRatio: false
+    }
+  });
 
   //
   // Populate tracked pilots dropdown
   //
   const trackedPilotData = await ipcRenderer.invoke('getPilots', 'SELECT * FROM pilotdata');
-  let pilotSelectedOption = '';
   const pilotSelectEl = document.querySelector('#pilotSelect');
 
   if(trackedPilotData.length < 1) {
@@ -88,6 +190,9 @@ let selectedEvent;
     event => {
 
       masterQuery = '';
+      serverQuery = '';
+      eventQuery = '';
+      locationQuery = '';
 
       //
       // Build query function to run off of dropdown selections
@@ -108,42 +213,40 @@ let selectedEvent;
           trackedPilotData = await ipcRenderer.invoke('getPilots', 'SELECT * FROM pilotdata WHERE id='+selectedPilot);
         }
 
-        if(trackedPilotData.length >= 1 && trackedPilotData.length < 2) { // we only have one tracked pilot so bail out but check for both idents
-          masterQuery = 'primary_object_pilot LIKE "%' + trackedPilotData[0].ident1 + '%"';
+        let trackedPilots = function(type) {
+          let trackedPilotType;
+          let pilotQuery;
 
-          if(trackedPilotData[0].ident2 !== '') { // if they added another ident, add that to the query
-            masterQuery += ' OR primary_object_pilot LIKE "%' + trackedPilotData[0].ident2 + '%"';
+          if(type === 'secondary') {
+            trackedPilotType = 'secondary_object_pilot';
+          } else {
+            trackedPilotType = 'primary_object_pilot';
           }
 
-          console.log('only searching for one pilot');
-        } else if(trackedPilotData.length > 1) {
-          let firstQuery = 'primary_object_pilot LIKE "%' + trackedPilotData[0].ident1 + '%" OR (';
+          if(trackedPilotData.length >= 1 && trackedPilotData.length < 2) { // we only have one tracked pilot so bail out but check for both idents
+            pilotQuery = `(${trackedPilotType} LIKE "%${trackedPilotData[0].ident1}%")`;
 
-          for(let i = 0; i < trackedPilotData.length; i++) {
-            if(i < 1){
-              masterQuery = firstQuery;
+            console.log('only searching for one pilot');
+          } else if(trackedPilotData.length > 1) {
+            let firstQuery = `(${trackedPilotType} LIKE "%${trackedPilotData[0].ident1}%" OR `;
 
-              if(trackedPilotData[i].ident2 !== '') {
-                masterQuery += ' OR primary_object_pilot LIKE "%' + trackedPilotData[i].ident2 + '%"';
-              }
-            } else {
-              if (i === trackedPilotData.length - 1) {
-                if(trackedPilotData[i].ident2 === '') { // if the last pilot in the list does not have a second ident, bail out
-                  masterQuery += 'primary_object_pilot LIKE "%' + trackedPilotData[i].ident1 + '%")';
-                } else {
-                  masterQuery += ' primary_object_pilot LIKE "%' + trackedPilotData[i].ident2 + '%")';
-                }
+            for(let i = 0; i < trackedPilotData.length; i++) {
+              if(i < 1){
+                pilotQuery = firstQuery;
+
               } else {
-                masterQuery += 'primary_object_pilot LIKE "%' + trackedPilotData[i].ident1 + '%" OR ';
-
-                if(trackedPilotData[i].ident2 !== '') {
-                  masterQuery += ' primary_object_pilot LIKE "%' + trackedPilotData[i].ident2 + '%" OR ';
+                if (i === trackedPilotData.length - 1) {
+                  pilotQuery += `${trackedPilotType} LIKE "%${trackedPilotData[i].ident1}%")`;
+                } else {
+                  pilotQuery += `${trackedPilotType} LIKE "%${trackedPilotData[i].ident1}%" OR `;
                 }
               }
             }
+
+            console.log('Searching for all pilots');
           }
 
-          console.log('Searching for all pilots');
+          return pilotQuery;
         }
 
         //
@@ -158,19 +261,20 @@ let selectedEvent;
         }
 
         if(serverData.length >= 1 && serverData.length < 2) { // we only have one server added / tagged
-          masterQuery += ' AND server='+ selectedServer;
+          serverQuery = 'AND server='+ serverData[0].id;
 
           console.log('only searching for one server');
-        } else if(serverData.length > 1) {
-          let firstQuery = ' AND (server='+ serverData[0].id;
 
-          masterQuery += firstQuery;
+        } else {
+          let firstQuery = 'AND (server='+ serverData[0].id;
+
+          serverQuery += firstQuery;
 
           for(let i = 1; i < serverData.length; i++) {
-            masterQuery += ' OR server=' + serverData[i].id;
+            serverQuery += ' OR server=' + serverData[i].id;
 
             if (i === serverData.length - 1) {
-              masterQuery += ')';
+              serverQuery += ')';
             }
           }
 
@@ -189,20 +293,20 @@ let selectedEvent;
         }
 
         if(locationData.length && locationData.length < 2) { // we only have one location added / tagged
-          masterQuery += ' AND location='+ selectedLocation;
+          locationQuery = 'AND location='+ selectedLocation;
 
           console.log('only searching for one location');
         } else if(locationData.length > 1) {
-          let firstQuery = ' AND (location='+ locationData[0].id;
+          let firstQuery = 'AND (location='+ locationData[0].id;
 
-          masterQuery += firstQuery;
+          locationQuery += firstQuery;
 
           // for(let i = 0; i < trackedPilotData.length; i++) {
           for(let i = 1; i < locationData.length; i++) {
-            masterQuery += ' OR location=' + locationData[i].id;
+            locationQuery += ' OR location=' + locationData[i].id;
 
             if (i === locationData.length - 1) {
-              masterQuery += ')';
+              locationQuery += ')';
             }
           }
 
@@ -221,31 +325,202 @@ let selectedEvent;
         }
 
         if(eventData.length && eventData.length < 2) { // we only have one event added / tagged
-          masterQuery += ' AND event="'+ selectedEvent+'"';
+          eventQuery = 'AND event="'+ selectedEvent+'"';
 
           console.log('only searching for one event');
         } else if(eventData.length > 1) {
-          let firstQuery = ' AND (event="'+ eventData[0].name+'"';
+          let firstQuery = 'AND (event="'+ eventData[0].name+'"';
 
-          masterQuery += firstQuery;
+          eventQuery += firstQuery;
 
           for(let i = 1; i < eventData.length; i++) {
-            masterQuery += ' OR event="' + eventData[i].name+'"';
+            eventQuery += ' OR event="' + eventData[i].name+'"';
 
             if (i === eventData.length - 1) {
-              masterQuery += ')';
+              eventQuery += ')';
             }
           }
 
           console.log('Searching for all events');
         }
-
+        console.log(trackedPilotData);
         if(trackedPilotData.length > 0 && serverData.length > 0) {
-          const query = `SELECT * FROM flightlogimports WHERE (${masterQuery}) ORDER BY flightlog_id ASC`;
-          console.log(query);
+          //
+          //  Main pilot select query, based on dropdown selections
+          //
+          let mainPilotSelect = `SELECT * FROM flightlogimports WHERE ${trackedPilots()} ${serverQuery} ${locationQuery} ORDER BY flightlog_id ASC`;
+          console.log('Main Query', mainPilotSelect);
 
-          const results = await ipcRenderer.invoke('flightlogs', query);
-          console.log('result: ', results); //result.length > 0?
+          let mainPilotSelectResults = await ipcRenderer.invoke('flightlogs', mainPilotSelect);
+          console.log('ALL events for ALL servers for tracked pilot(s): ', mainPilotSelectResults);
+
+          //
+          // Count all deaths from selected pilots(s) based on selections
+          //
+          let allDeaths = `SELECT event, count(event) FROM flightlogimports WHERE event="HasBeenDestroyed" AND ${trackedPilots()} ${serverQuery} ${locationQuery} GROUP BY event ORDER BY flightlog_id ASC`;
+          console.log('Destroyed', allDeaths);
+          let allDeathsResults = await ipcRenderer.invoke('flightlogs', allDeaths);
+          console.log('Deaths results:', allDeathsResults);
+
+          if(allDeathsResults.length < 1) {
+            allDeathsResults = [0];
+          }
+
+          //
+          // Count all kills from selected pilots(s) based on selections
+          //
+          let allKills = `SELECT event, count(event) FROM flightlogimports WHERE event="HasBeenDestroyed" AND ${trackedPilots('secondary')} ${serverQuery} ${locationQuery} GROUP BY event ORDER BY flightlog_id ASC`;
+          console.log('Kills', allKills);
+          let allKillsResults = await ipcRenderer.invoke('flightlogs', allKills);
+          console.log('Kills results:', allKillsResults);
+
+          if(allKillsResults.length < 1) {
+            allKillsResults = [0];
+          }
+
+          //
+          // Get all munitions fired based on selections
+          //
+          let allMunitions = `SELECT * FROM flightlogimports WHERE event="HasFired" AND ${trackedPilots()} ${serverQuery} ${locationQuery} ORDER BY flightlog_id ASC`;
+          let allMunitionsResults = await ipcRenderer.invoke('flightlogs', allMunitions);
+
+          if(allMunitionsResults.length < 1) {
+            allMunitionsResults = [0];
+          }
+
+          let munitionTypes = [];
+          let munitions = [];
+
+          //
+          // Find all and add all munition "occurences" to get total fired by type
+          //
+          for(let i = 0; i < allMunitionsResults.length; i++) {
+
+            // Only add unique muntions to array
+            if(munitionTypes.indexOf(allMunitionsResults[i].secondary_object_name) === -1) {
+              let munitonName = allMunitionsResults[i].secondary_object_name;
+              let munitionQuantity = allMunitionsResults[i].occurences;
+              let munition = {name: munitonName, quantity: munitionQuantity}
+
+              munitionTypes.push(munitonName);
+              munitions.push(munition);
+
+              // we have a dupe but we need to add those occurences to their matching secondary_object_name occurence for a complete total...
+              munitions.forEach(munition => {
+                if(munition.name === allMunitionsResults[i].secondary_object_name) {
+                  munition.quantity = munition.quantity + allMunitionsResults[i].occurences;
+                }
+              });
+            }
+          }
+
+          let serverArray = [];
+          for(let i = 0; i < mainPilotSelectResults.length; i++) {
+
+            //
+            // Get server names from matching server data to the results
+            //
+            for(let s = 0; s < serverData.length; s++) {
+              if(mainPilotSelectResults[i].server === serverData[s].id) {
+                let serverName = serverData[s].name;
+                if(serverArray.indexOf(serverName) === -1) {
+                  serverArray.push(serverName);
+                }
+              }
+            }
+          }
+
+          let kills = [allKillsResults[0]['count(event)']]
+          let deaths = [allDeathsResults[0]['count(event)']];
+          if(kills < 1) kills = 0;
+          if(deaths < 1) deaths = 0;
+
+          //
+          //
+          // Update Charts
+          //
+          //
+
+          //
+          // Kill death chart
+          //
+          if(serverArray.length > 1) {
+            serverArray = ['All Tracked Servers']
+          }
+
+          killDeathChart.data.labels = serverArray;
+          killDeathChart.data.datasets[0].label = `${deaths} Deaths`;
+          killDeathChart.data.datasets[0].data = `${deaths}`;
+          killDeathChart.data.datasets[1].label = `${kills} Kills`;
+          killDeathChart.data.datasets[1].data = [`${kills}`];
+          killDeathChart.update();
+
+          //
+          // Munitions chart
+          //
+          munitionChart.data.labels = [];
+          munitionChart.data.datasets[0].data = [];
+          if(kills < 1) kills = 0;
+          if(deaths < 1) deaths = 0;
+          console.log('munitions length', munitions.length);
+
+          if(munitions.length > 1) {
+            for (let prop in munitions) {
+              munitionChart.data.labels.push(munitions[prop].name);
+              munitionChart.data.datasets[0].data.push(munitions[prop].quantity);
+            }
+          } else {
+            munitionChart.data.labels = ['NO DATA'];
+            munitionChart.data.datasets[0].data = [];
+          }
+
+          munitionChart.update();
+
+          //
+          // All deaths for selected pilot
+          //
+          // let AllDeaths = `SELECT * FROM flightlogimports WHERE event="HasBeenDestroyed" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
+          // console.log(AllDeaths);
+
+          // let AllDeathsResults = await ipcRenderer.invoke('flightlogs', AllDeaths);
+          // console.log('All deaths by selected pilot: ', AllDeathsResults);
+
+          //
+          // All take offs for selected pilot
+          //
+          // let AllTakeOff = `SELECT * FROM flightlogimports WHERE event="HasTakenOff" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
+          // console.log(AllTakeOff);
+
+          // let AllTakeOffsResults = await ipcRenderer.invoke('flightlogs', AllTakeOff);
+          // console.log('All takeoffs by selected pilot: ', AllTakeOffsResults);
+
+          //
+          // All landings for selected pilot
+          //
+          // let AllLandings = `SELECT * FROM flightlogimports WHERE event="HasLanded" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
+          // console.log(AllLandings);
+
+          // let AllLandingResults = await ipcRenderer.invoke('flightlogs', AllLandings);
+          // console.log('All landings by selected pilot: ', AllLandingResults);
+
+          //
+          // All fired munitions
+          //
+          // let AllMunitions = `SELECT * FROM flightlogimports WHERE event="HasFired" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
+          // console.log(AllMunitions);
+
+          // let AllMunitionsResults = await ipcRenderer.invoke('flightlogs', AllMunitions);
+          // console.log('All fired munitions by selected pilot: ', AllMunitionsResults);
+
+          //
+          // Most fired munitions
+          //
+          // let MostUsedMunition = `SELECT secondary_object_name, count(secondary_object_name) FROM flightlogimports WHERE primary_object_id=${mainPilotSelectResults[0].primary_object_id} GROUP by secondary_object_name`;
+          // console.log(MostUsedMunition);
+
+          // let MostUsedMunitionResults = await ipcRenderer.invoke('flightlogs', MostUsedMunition);
+          // console.log('Most used munition by selected pilot: ', MostUsedMunitionResults);
+
         } else {
           console.log('There are no pilots or servers added...');
         }
@@ -260,24 +535,5 @@ let selectedEvent;
 })();
 
 window.addEventListener('load', function () {
-  // const ctx = document.getElementById('myChart');
 
-  // new Chart(ctx, {
-  //   type: 'bar',
-  //   data: {
-  //     labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-  //     datasets: [{
-  //       label: '# of test pilot data',
-  //       data: [12, 19, 3, 5, 2, 3],
-  //       borderWidth: 3
-  //     }]
-  //   },
-  //   options: {
-  //     scales: {
-  //       y: {
-  //         beginAtZero: true
-  //       }
-  //     }
-  //   }
-  // });
 }, false); // end load
