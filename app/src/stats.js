@@ -29,7 +29,8 @@ let selectedEvent;
       datasets: [{
         label: 'NO DATA',
         data: [],
-        borderWidth: 3,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
         backgroundColor: [
           'rgb(232, 42, 25)'
         ]
@@ -37,7 +38,8 @@ let selectedEvent;
       {
         label: 'NO DATA',
         data: [],
-        borderWidth: 3,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
         backgroundColor: [
           'rgb(51, 207, 70)'
         ]
@@ -47,7 +49,22 @@ let selectedEvent;
     options: {
       scales: {
         y: {
-          beginAtZero: true
+          ticks: {
+            beginAtZero:true,
+            color: 'white'
+          },
+          grid: {
+            color: 'white'
+          }
+        },
+        x: {
+          ticks: {
+            beginAtZero:true,
+            color: 'white'
+          },
+          grid: {
+            color: 'white'
+          }
         }
       },
       layout: {
@@ -56,13 +73,21 @@ let selectedEvent;
       ticks: {
         precision:0
       },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#FFF'
+          }
+        }
+      },
       maintainAspectRatio: false
     }
   });
 
   let mchart = document.getElementById("munitionsChart");
   let munitionChart = new Chart(mchart, {
-    type: 'doughnut',
+    type: 'pie',
     data: {
       labels: [],
       datasets: [{
@@ -99,11 +124,19 @@ let selectedEvent;
           },
           grid: {
             display:false
+          },
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#FFF'
           }
         }
       },
       layout: {
-        padding: 20
+        autoPadding: true,
       },
       maintainAspectRatio: false
     }
@@ -381,7 +414,7 @@ let selectedEvent;
           let allMunitionsResults = await ipcRenderer.invoke('flightlogs', allMunitions);
 
           if(allMunitionsResults.length < 1) {
-            allMunitionsResults = [0];
+            allMunitionsResults = [];
           }
 
           let munitionTypes = [];
@@ -390,23 +423,26 @@ let selectedEvent;
           //
           // Find all and add all munition "occurences" to get total fired by type
           //
-          for(let i = 0; i < allMunitionsResults.length; i++) {
+          if(allMunitionsResults.length > 0){
+            for(let i = 0; i < allMunitionsResults.length; i++) {
 
-            // Only add unique muntions to array
-            if(munitionTypes.indexOf(allMunitionsResults[i].secondary_object_name) === -1) {
-              let munitonName = allMunitionsResults[i].secondary_object_name;
-              let munitionQuantity = allMunitionsResults[i].occurences;
-              let munition = {name: munitonName, quantity: munitionQuantity}
+              // Only add unique muntions to array
+              if(munitionTypes.indexOf(allMunitionsResults[i].secondary_object_name) === -1) {
 
-              munitionTypes.push(munitonName);
-              munitions.push(munition);
+                let munitonName = allMunitionsResults[i].secondary_object_name;
+                let munitionQuantity = allMunitionsResults[i].occurences;
+                let munition = {name: munitonName, quantity: munitionQuantity}
 
-              // we have a dupe but we need to add those occurences to their matching secondary_object_name occurence for a complete total...
-              munitions.forEach(munition => {
-                if(munition.name === allMunitionsResults[i].secondary_object_name) {
-                  munition.quantity = munition.quantity + allMunitionsResults[i].occurences;
-                }
-              });
+                munitionTypes.push(munitonName);
+                munitions.push(munition);
+
+                // we have a dupe but we need to add those occurences to their matching secondary_object_name occurence for a complete total...
+                munitions.forEach(munition => {
+                  if(munition.name === allMunitionsResults[i].secondary_object_name) {
+                    munition.quantity = munition.quantity + allMunitionsResults[i].occurences;
+                  }
+                });
+              }
             }
           }
 
@@ -459,9 +495,11 @@ let selectedEvent;
           if(kills < 1) kills = 0;
           if(deaths < 1) deaths = 0;
 
-          if(munitions.length > 1) {
+          console.log(munitions);
+
+          if(munitions.length > 0) {
             for (let prop in munitions) {
-              munitionChart.data.labels.push(munitions[prop].name);
+              munitionChart.data.labels.push('['+munitions[prop].quantity+'] '+munitions[prop].name);
               munitionChart.data.datasets[0].data.push(munitions[prop].quantity);
             }
           } else {
