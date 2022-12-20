@@ -53,6 +53,10 @@ body {
   padding: 3px;
 }
 
+#killDeathChart, #munitionsChart {
+  height: 500px;
+}
+
 .logo {
   display: inline-block;
   margin-right: 10px;

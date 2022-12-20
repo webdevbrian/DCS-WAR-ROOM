@@ -27,7 +27,7 @@ let selectedEvent;
     data: {
       labels: [],
       datasets: [{
-        label: '',
+        label: 'NO DATA',
         data: [],
         borderWidth: 3,
         backgroundColor: [
@@ -35,7 +35,7 @@ let selectedEvent;
         ]
       },
       {
-        label: '',
+        label: 'NO DATA',
         data: [],
         borderWidth: 3,
         backgroundColor: [
@@ -49,6 +49,9 @@ let selectedEvent;
         y: {
           beginAtZero: true
         }
+      },
+      layout: {
+        //padding: 0
       },
       ticks: {
         precision:0
@@ -102,18 +105,6 @@ let selectedEvent;
       layout: {
         padding: 20
       },
-      plugins: {
-        datalabels: {
-          borderWidth: 5,
-          borderColor: "white",
-          borderRadius: 8,
-          // color: 0,
-          font: {
-            weight: "bold"
-          },
-          backgroundColor: "lightgray"
-        }
-      },
       maintainAspectRatio: false
     }
   });
@@ -147,13 +138,21 @@ let selectedEvent;
   let serverSelectedOption = '';
   const serverSelectEl = document.querySelector('#serverSelect')
 
-  for(let i = 0; i < serverData.length; i++) {
+  if(serverData.length < 1) {
     const serverSelectedOption = document.createElement('option');
-    const selectName = document.createTextNode(serverData[i].name);
+    const selectName = document.createTextNode('No servers added!');
     serverSelectedOption.appendChild(selectName);
-    serverSelectedOption.setAttribute('value',`${serverData[i].id}`);
+    serverSelectedOption.setAttribute('value',`69`);
     serverSelectEl.appendChild(serverSelectedOption);
-  };
+  } else {
+    for(let i = 0; i < serverData.length; i++) {
+      const serverSelectedOption = document.createElement('option');
+      const selectName = document.createTextNode(serverData[i].name);
+      serverSelectedOption.appendChild(selectName);
+      serverSelectedOption.setAttribute('value',`${serverData[i].id}`);
+      serverSelectEl.appendChild(serverSelectedOption);
+    };
+  }
 
   //
   // Populate locations dropdown
@@ -266,19 +265,21 @@ let selectedEvent;
           console.log('only searching for one server');
 
         } else {
-          let firstQuery = 'AND (server='+ serverData[0].id;
+          if(serverData.length > 0){
+            let firstQuery = 'AND (server='+ serverData[0].id;
 
-          serverQuery += firstQuery;
+            serverQuery += firstQuery;
 
-          for(let i = 1; i < serverData.length; i++) {
-            serverQuery += ' OR server=' + serverData[i].id;
+            for(let i = 1; i < serverData.length; i++) {
+              serverQuery += ' OR server=' + serverData[i].id;
 
-            if (i === serverData.length - 1) {
-              serverQuery += ')';
+              if (i === serverData.length - 1) {
+                serverQuery += ')';
+              }
             }
-          }
 
-          console.log('Searching for all servers');
+            console.log('Searching for all servers');
+          }
         }
 
         //
@@ -301,7 +302,6 @@ let selectedEvent;
 
           locationQuery += firstQuery;
 
-          // for(let i = 0; i < trackedPilotData.length; i++) {
           for(let i = 1; i < locationData.length; i++) {
             locationQuery += ' OR location=' + locationData[i].id;
 
@@ -358,9 +358,7 @@ let selectedEvent;
           // Count all deaths from selected pilots(s) based on selections
           //
           let allDeaths = `SELECT event, count(event) FROM flightlogimports WHERE event="HasBeenDestroyed" AND ${trackedPilots()} ${serverQuery} ${locationQuery} GROUP BY event ORDER BY flightlog_id ASC`;
-          console.log('Destroyed', allDeaths);
           let allDeathsResults = await ipcRenderer.invoke('flightlogs', allDeaths);
-          console.log('Deaths results:', allDeathsResults);
 
           if(allDeathsResults.length < 1) {
             allDeathsResults = [0];
@@ -370,9 +368,7 @@ let selectedEvent;
           // Count all kills from selected pilots(s) based on selections
           //
           let allKills = `SELECT event, count(event) FROM flightlogimports WHERE event="HasBeenDestroyed" AND ${trackedPilots('secondary')} ${serverQuery} ${locationQuery} GROUP BY event ORDER BY flightlog_id ASC`;
-          console.log('Kills', allKills);
           let allKillsResults = await ipcRenderer.invoke('flightlogs', allKills);
-          console.log('Kills results:', allKillsResults);
 
           if(allKillsResults.length < 1) {
             allKillsResults = [0];
@@ -449,9 +445,9 @@ let selectedEvent;
           }
 
           killDeathChart.data.labels = serverArray;
-          killDeathChart.data.datasets[0].label = `${deaths} Deaths`;
-          killDeathChart.data.datasets[0].data = `${deaths}`;
-          killDeathChart.data.datasets[1].label = `${kills} Kills`;
+          killDeathChart.data.datasets[0].label = `Deaths`;
+          killDeathChart.data.datasets[0].data = deaths;
+          killDeathChart.data.datasets[1].label = `Kills`;
           killDeathChart.data.datasets[1].data = [`${kills}`];
           killDeathChart.update();
 
@@ -462,7 +458,6 @@ let selectedEvent;
           munitionChart.data.datasets[0].data = [];
           if(kills < 1) kills = 0;
           if(deaths < 1) deaths = 0;
-          console.log('munitions length', munitions.length);
 
           if(munitions.length > 1) {
             for (let prop in munitions) {
@@ -476,14 +471,6 @@ let selectedEvent;
 
           munitionChart.update();
 
-          //
-          // All deaths for selected pilot
-          //
-          // let AllDeaths = `SELECT * FROM flightlogimports WHERE event="HasBeenDestroyed" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
-          // console.log(AllDeaths);
-
-          // let AllDeathsResults = await ipcRenderer.invoke('flightlogs', AllDeaths);
-          // console.log('All deaths by selected pilot: ', AllDeathsResults);
 
           //
           // All take offs for selected pilot

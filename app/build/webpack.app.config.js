@@ -8,7 +8,7 @@ module.exports = env => {
       main: "./src/main.js",
       app: "./src/app.js",
       flightlogs: "./src/flightlogs.js",
-      processing: "./src/processing.js",
+      tracking: "./src/tracking.js",
       stats: "./src/stats.js"
     },
     output: {
