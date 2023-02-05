@@ -21,6 +21,9 @@
           <li class="nav-item"><a href="flightlogs.html" class="nav-link">Flight Logs</a></li>
           <li class="nav-item"><a href="tracking.html" class="nav-link">Tracking</a></li>
           <li class="nav-item"><a href="#" class="nav-link active">Stats</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">Discord Bot</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">API</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">Settings</a></li>
           <li class="nav-item"><a href="#" class="nav-link">About</a></li>
         </ul>
       </header>
@@ -32,7 +35,7 @@
         </div>
       </div>
 
-      <div class="row ">
+      <div class="row">
         <div class="col-md-3">
           <p>1. Select a pilot</p>
           <select id="pilotSelect" class="form-select form-select-lg mb-3">
@@ -63,6 +66,42 @@
       </div>
 
       <div class="row align-items-md-stretch">
+        <div class="col-md-12">
+          <hr />
+        </div>
+      </div>
+
+      <div class="row align-items-md-stretch">
+        <div class="col-md-12">
+          <h2>Chart selections</h2>
+          <div>
+            <div class="form-check form-check-inline form-switch">
+              <input class="form-check-input" type="radio" id="killDeathRatio" value="option1" checked disabled>
+              <label class="form-check-label" for="killDeathRatio">K/D</label>
+            </div>
+            <div class="form-check form-check-inline form-switch">
+              <input class="form-check-input" type="radio" id="munitionRatio" value="option2" checked disabled>
+              <label class="form-check-label" for="munitionRatio">Munitions</label>
+            </div>
+            <div class="form-check form-check-inline form-switch">
+              <input class="form-check-input" type="radio" id="moduleRatio" value="option3" checked disabled>
+              <label class="form-check-label" for="moduleRatio">Module</label>
+            </div>
+            <div class="form-check form-check-inline form-switch">
+              <input class="form-check-input" type="radio" id="flightTime" value="option3" disabled>
+              <label class="form-check-label" for="flightTime">Flight Time</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row align-items-md-stretch">
+        <div class="col-md-12">
+          <hr />
+        </div>
+      </div>
+
+      <div class="row align-items-md-stretch">
         <div class="col-md-6">
           <h2>Kills / Deaths</h2>
           <div><canvas id="killDeathChart"></canvas></div>
@@ -70,6 +109,17 @@
         <div class="col-md-6">
           <h2>Munitions</h2>
           <div><canvas id="munitionsChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="row align-items-md-stretch">
+        <div class="col-md-6">
+          <h2>Module(s)</h2>
+          <div><canvas id="moduleChart"></canvas></div>
+        </div>
+        <div class="col-md-6">
+          <h2>Flight Time</h2>
+          <div><canvas id="flightTimeChart"></canvas></div>
         </div>
       </div>
 

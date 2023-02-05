@@ -53,7 +53,7 @@ body {
   padding: 3px;
 }
 
-#killDeathChart, #munitionsChart {
+#killDeathChart, #munitionsChart, #moduleChart {
   height: 500px;
 }
 

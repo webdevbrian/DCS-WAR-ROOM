@@ -6,7 +6,7 @@ document.querySelector("#app").style.display = "block";
 let selectedPilot;
 let selectedServer;
 let selectedLocation;
-let selectedEvent;
+//let selectedEvent;
 
 (async () => {
 
@@ -14,8 +14,9 @@ let selectedEvent;
   // All queries TODO: Refactor
   //
   let masterQuery = '';
+  let pilotQuery = '';
   let serverQuery = '';
-  let eventQuery = '';
+  //let eventQuery = '';
   let locationQuery = '';
 
   //
@@ -47,10 +48,11 @@ let selectedEvent;
     ]
     },
     options: {
+      normalized: true,
       scales: {
         y: {
           ticks: {
-            beginAtZero:true,
+            beginAtZero: true,
             color: 'white'
           },
           grid: {
@@ -59,7 +61,7 @@ let selectedEvent;
         },
         x: {
           ticks: {
-            beginAtZero:true,
+            beginAtZero: true,
             color: 'white'
           },
           grid: {
@@ -111,10 +113,10 @@ let selectedEvent;
           'rgb(138, 123, 247)'
         ],
         hoverOffset: 20
-      }
-      ]
+      }]
     },
     options: {
+      normalized: true,
       scales: {
         y: {
           beginAtZero: true,
@@ -137,6 +139,119 @@ let selectedEvent;
       },
       layout: {
         autoPadding: true,
+      },
+      maintainAspectRatio: false
+    }
+  });
+
+  let modulechart = document.getElementById("moduleChart");
+  let moduleChart = new Chart(modulechart, {
+    type: 'pie',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Used',
+        data: [],
+        backgroundColor: [
+          'rgb(138, 123, 247)',
+          'rgb(208, 12, 123)',
+          'rgb(225, 238, 50)',
+          'rgb(89, 1, 37)',
+          'rgb(239, 142, 220)',
+          'rgb(123, 194, 212)',
+          'rgb(204, 167, 158)',
+          'rgb(128, 186, 237)',
+          'rgb(49, 175, 52)',
+          'rgb(51, 207, 70)',
+          'rgb(232, 42, 25)',
+          'rgb(153, 172, 164)',
+          'rgb(255, 205, 86)',
+          'rgb(54, 162, 235)',
+          'rgb(255, 99, 132)'
+        ],
+        hoverOffset: 20
+      }]
+    },
+    options: {
+      normalized: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            display: false
+          },
+          grid: {
+            display:false
+          },
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#FFF'
+          }
+        }
+      },
+      layout: {
+        autoPadding: true,
+      },
+      maintainAspectRatio: false
+    }
+  });
+
+  let FlightTimeChart = document.getElementById("flightTimeChart");
+  let flightTimeChart = new Chart(FlightTimeChart, {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'NO DATA',
+        data: [],
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        backgroundColor: [
+          'rgb(232, 42, 25)'
+        ]
+      }
+    ]
+    },
+    options: {
+      normalized: true,
+      scales: {
+        y: {
+          ticks: {
+            beginAtZero: true,
+            color: 'white'
+          },
+          grid: {
+            color: 'white'
+          }
+        },
+        x: {
+          ticks: {
+            beginAtZero: true,
+            color: 'white'
+          },
+          grid: {
+            color: 'white'
+          }
+        }
+      },
+      layout: {
+        //padding: 0
+      },
+      ticks: {
+        precision:0
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#FFF'
+          }
+        }
       },
       maintainAspectRatio: false
     }
@@ -169,7 +284,7 @@ let selectedEvent;
   //
   const serverData = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers');
   let serverSelectedOption = '';
-  const serverSelectEl = document.querySelector('#serverSelect')
+  const serverSelectEl = document.querySelector('#serverSelect');
 
   if(serverData.length < 1) {
     const serverSelectedOption = document.createElement('option');
@@ -222,12 +337,13 @@ let selectedEvent;
     event => {
 
       masterQuery = '';
+      pilotQuery = '';
       serverQuery = '';
-      eventQuery = '';
+      //eventQuery = '';
       locationQuery = '';
 
       //
-      // Build query function to run off of dropdown selections
+      // Get values of dropdowns to build queries dynamically
       //
       selectedPilot = document.querySelector('#pilotSelect').value;
       selectedServer = document.querySelector('#serverSelect').value;
@@ -247,7 +363,7 @@ let selectedEvent;
 
         let trackedPilots = function(type) {
           let trackedPilotType;
-          let pilotQuery;
+          pilotQuery;
 
           if(type === 'secondary') {
             trackedPilotType = 'secondary_object_pilot';
@@ -349,35 +465,36 @@ let selectedEvent;
         //
         // Event
         //
-        let eventData;
+        // let eventData;
 
-        if(selectedEvent == 69) { // If they selected all events
-          eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events');
-        } else {
-          eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events WHERE name="'+selectedEvent+'"');
-        }
+        // if(selectedEvent == 69) { // If they selected all events
+        //   eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events');
+        // } else {
+        //   eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events WHERE name="'+selectedEvent+'"');
+        // }
 
-        if(eventData.length && eventData.length < 2) { // we only have one event added / tagged
-          eventQuery = 'AND event="'+ selectedEvent+'"';
+        // if(eventData.length && eventData.length < 2) { // we only have one event added / tagged
+        //   eventQuery = 'AND event="'+ selectedEvent+'"';
 
-          console.log('only searching for one event');
-        } else if(eventData.length > 1) {
-          let firstQuery = 'AND (event="'+ eventData[0].name+'"';
+        //   console.log('only searching for one event');
+        // } else if(eventData.length > 1) {
+        //   let firstQuery = 'AND (event="'+ eventData[0].name+'"';
 
-          eventQuery += firstQuery;
+        //   eventQuery += firstQuery;
 
-          for(let i = 1; i < eventData.length; i++) {
-            eventQuery += ' OR event="' + eventData[i].name+'"';
+        //   for(let i = 1; i < eventData.length; i++) {
+        //     eventQuery += ' OR event="' + eventData[i].name+'"';
 
-            if (i === eventData.length - 1) {
-              eventQuery += ')';
-            }
-          }
+        //     if (i === eventData.length - 1) {
+        //       eventQuery += ')';
+        //     }
+        //   }
 
-          console.log('Searching for all events');
-        }
-        console.log(trackedPilotData);
+        //   console.log('Searching for all events');
+        // };
+
         if(trackedPilotData.length > 0 && serverData.length > 0) {
+
           //
           //  Main pilot select query, based on dropdown selections
           //
@@ -426,25 +543,109 @@ let selectedEvent;
           if(allMunitionsResults.length > 0){
             for(let i = 0; i < allMunitionsResults.length; i++) {
 
+              let munitonName = allMunitionsResults[i].secondary_object_name;
+              let munitionQuantity = allMunitionsResults[i].occurences;
+              let munition = {name: munitonName, quantity: munitionQuantity}
+
+              //
+              // We have a dupe but we need to add those occurences to their matching secondary_object_name occurence for a complete total...
+              //
+              munitions.forEach(munition => {
+                if(munition.name === allMunitionsResults[i].secondary_object_name) {
+                  munition.quantity = munition.quantity + allMunitionsResults[i].occurences;
+                }
+              });
+
+              //
               // Only add unique muntions to array
+              //
               if(munitionTypes.indexOf(allMunitionsResults[i].secondary_object_name) === -1) {
-
-                let munitonName = allMunitionsResults[i].secondary_object_name;
-                let munitionQuantity = allMunitionsResults[i].occurences;
-                let munition = {name: munitonName, quantity: munitionQuantity}
-
                 munitionTypes.push(munitonName);
                 munitions.push(munition);
-
-                // we have a dupe but we need to add those occurences to their matching secondary_object_name occurence for a complete total...
-                munitions.forEach(munition => {
-                  if(munition.name === allMunitionsResults[i].secondary_object_name) {
-                    munition.quantity = munition.quantity + allMunitionsResults[i].occurences;
-                  }
-                });
               }
             }
           }
+
+          //
+          // Get all modules used based on selections
+          //
+          let allModules = `SELECT DISTINCT primary_object_name, primary_object_pilot FROM flightlogimports WHERE ${trackedPilots()} ${serverQuery} ${locationQuery} ORDER BY primary_object_name ASC`;
+          let allModulesResults = await ipcRenderer.invoke('flightlogs', allModules);
+
+          if(allModulesResults.length < 1) {
+            allModulesResults = [];
+          }
+
+          let modules = [];
+
+          //
+          // Find all and add all modules used
+          //
+          if(allModulesResults.length > 0){
+            for(let i = 0; i < allModulesResults.length; i++) {
+              let moduleCount = 1;
+              let module = {
+                name: allModulesResults[i].primary_object_name,
+                pilot: allModulesResults[i].primary_object_pilot,
+                count: moduleCount
+              };
+
+              modules.push(module);
+            }
+          }
+
+          //
+          // Get all data for calculating flight times
+          //
+          let flightTime = `SELECT mission_time, primary_object_name, primary_object_pilot, event, flightlog_id FROM flightlogimports WHERE ${trackedPilots()} ${serverQuery} ${locationQuery} AND (event="HasTakenOff" OR event="HasBeenDestroyed" OR event="HasLanded") ORDER BY flightlog_id DESC`;
+          let flightTimeResults = await ipcRenderer.invoke('flightlogs', flightTime);
+          let hasTakenOffArray = [];
+          let hasLandedArray = [];
+
+          if(flightTimeResults.length < 1) {
+            flightTimeResults = [];
+          } else {
+            for(let i = 0; i < flightTimeResults.length; i++) {
+
+              //
+              // Get all taken off and landed events and associate them to their arrays for further analysis
+              //
+              if(flightTimeResults[i].event === 'HasTakenOff') {
+                hasTakenOffArray.push(flightTimeResults[i]);
+                console.log('has taken off: ', flightTimeResults[i]);
+              }
+
+              if(flightTimeResults[i].event === 'HasLanded') {
+                hasLandedArray.push(flightTimeResults[i]);
+                console.log('has landed: ', flightTimeResults[i]);
+              }
+            }
+
+            //
+            // Compare both arrays, find mathing "has taken off" from logged "has landed" but make sure it has the same flight ID and pilot
+            // If there is  "has landed" but with no matching "has taken off" for a given pilot then disgard it.
+            //
+            console.log(hasTakenOffArray, hasLandedArray);
+
+          }
+
+          //
+          // Calculate total flight times per module
+          //
+
+          // if(allModulesResults.length > 0){
+          //   for(let i = 0; i < allModulesResults.length; i++) {
+          //     let moduleCount = 1;
+          //     let module = {
+          //       name: allModulesResults[i].primary_object_name,
+          //       pilot: allModulesResults[i].primary_object_pilot,
+          //       count: moduleCount
+          //     };
+
+          //     modules.push(module);
+          //     console.log('modules', modules);
+          //   }
+          // }
 
           let serverArray = [];
           for(let i = 0; i < mainPilotSelectResults.length; i++) {
@@ -495,38 +696,50 @@ let selectedEvent;
           if(kills < 1) kills = 0;
           if(deaths < 1) deaths = 0;
 
-          console.log(munitions);
-
           if(munitions.length > 0) {
             for (let prop in munitions) {
-              munitionChart.data.labels.push('['+munitions[prop].quantity+'] '+munitions[prop].name);
+              munitionChart.data.labels.push('('+munitions[prop].quantity+') '+munitions[prop].name);
               munitionChart.data.datasets[0].data.push(munitions[prop].quantity);
             }
           } else {
             munitionChart.data.labels = ['NO DATA'];
             munitionChart.data.datasets[0].data = [];
           }
-
           munitionChart.update();
 
+          //
+          // Modules chart
+          //
+          moduleChart.data.labels = [];
+          moduleChart.data.datasets[0].data = [];
+
+          if(modules.length > 0) {
+            for (let prop in modules) {
+              moduleChart.data.labels.push(modules[prop].pilot+' flew a '+modules[prop].name);
+              moduleChart.data.datasets[0].data.push(modules[prop].count);
+            }
+          } else {
+            moduleChart.data.labels = ['NO DATA'];
+            moduleChart.data.datasets[0].data = [];
+          }
+          moduleChart.update();
 
           //
-          // All take offs for selected pilot
+          // Flight time chart
           //
-          // let AllTakeOff = `SELECT * FROM flightlogimports WHERE event="HasTakenOff" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
-          // console.log(AllTakeOff);
+          flightTimeChart.data.labels = [];
+          flightTimeChart.data.datasets[0].data = [];
 
-          // let AllTakeOffsResults = await ipcRenderer.invoke('flightlogs', AllTakeOff);
-          // console.log('All takeoffs by selected pilot: ', AllTakeOffsResults);
-
-          //
-          // All landings for selected pilot
-          //
-          // let AllLandings = `SELECT * FROM flightlogimports WHERE event="HasLanded" AND primary_object_id=${mainPilotSelectResults[0].primary_object_id} ORDER BY flightlog_id ASC`;
-          // console.log(AllLandings);
-
-          // let AllLandingResults = await ipcRenderer.invoke('flightlogs', AllLandings);
-          // console.log('All landings by selected pilot: ', AllLandingResults);
+          if(modules.length > 0) {
+            for (let prop in modules) {
+              flightTimeChart.data.labels.push(modules[prop].pilot+' flew a '+modules[prop].name);
+              flightTimeChart.data.datasets[0].data.push(modules[prop].count);
+            }
+          } else {
+            flightTimeChart.data.labels = ['NO DATA'];
+            flightTimeChart.data.datasets[0].data = [];
+          }
+          //flightTimeChart.update();
 
           //
           // All fired munitions
@@ -549,7 +762,6 @@ let selectedEvent;
         } else {
           console.log('There are no pilots or servers added...');
         }
-
       })();
 
       event.preventDefault();
@@ -558,7 +770,3 @@ let selectedEvent;
   );
 
 })();
-
-window.addEventListener('load', function () {
-
-}, false); // end load
