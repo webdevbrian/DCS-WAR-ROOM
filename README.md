@@ -21,6 +21,11 @@ So feel free to open a PR with any fixes! I'll be structuring and adding issues 
 
 ---
 
+## **Application Flow (May 5th, 2023)**
+
+![DCS War Room Application Flow 5/4/2023](https://imgur.com/Vz2wkHk)
+---
+
 ## **General tasks**
 :heavy_check_mark: Build base repository
 
