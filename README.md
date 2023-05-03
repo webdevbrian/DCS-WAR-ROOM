@@ -5,7 +5,7 @@ Please remember this application is VERY much alpha level and there ARE ( and wi
 
 ---
 
-**!!!Please read this ENTIRE read me before asking questions / pull requests / adding issues etc!!!**
+**!!! Please read this ENTIRE read me before asking questions / pull requests / adding issues etc !!!**
 
 ---
 
