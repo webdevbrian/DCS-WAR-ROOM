@@ -1,5 +1,14 @@
 # DCS-WAR-ROOM
-A digital combat simulator flight and combat stats system powered by tacview
+A digital combat simulator stats system powered by tacview.
+
+Please remember this application is VERY much alpha level and there ARE ( and will be ) plenty of bugs!
+
+## Why?
+I wanted an app where I could track my stats regardless of which server I was on. I've been apart of a DCS flight group for about two years and one specific thing stuck out was that I'd like to start tracking my performance (and others in my flight group). Statistics like total flights, total successful landings, munitons spent, munition accuracy, and visualise them all at one glance rather than investigating in each individual tacview. This application serves purpose on doing just that, but with a multi sort / search functionality that I think other wings / DCS players may find valuable, so I published it out here to github.
+
+I need help with this repository as my real life job(s) are quite busy, and rather than keep my code siloed and not open I decided to put it out here to seek help on having other people help on extending functionality and features. DCS is a great community in that we all share this great hobby but also there are some others with some great ideas and skills that will help my project thrive.
+
+So feel free to open a PR with any fixes! I'll be structuring and adding issues in the near future that need to be prioritized.
 
 ---
 
@@ -17,7 +26,23 @@ A digital combat simulator flight and combat stats system powered by tacview
 
 :heavy_check_mark: Build base SQLite database for data imports and management
 
+:heavy_check_mark: Create container application with separate sections for functionality (flight logs / tracking etc) that can run by itself in windows
+
+:heavy_check_mark: Add quick stats to app launch home page
+
+:heavy_check_mark: Add contribute info to app launch home page
+
 :heavy_check_mark: Run test imports of tacview exports
+
+:heavy_check_mark: Run tacview automatically while importing file
+
+:x: Create discord bot that runs off of app's data (can respond to commands) to generate rendered image reports (use of canvas potentially)
+
+:x: Implement basic currency system based on varying factors (flight time, munitions spent, crashes etc)
+
+:x: Add basic app settings needed by functional areas of application in "Settings" view
+
+:x: Add discord server
 
 ---
 
@@ -32,13 +57,15 @@ A digital combat simulator flight and combat stats system powered by tacview
 
 :heavy_check_mark: (Create interface for database associations for pilot duplication)
 
-:x: (Create first version of interface for adding additional tacview file data (map location via drop down to start))
+:heavy_check_mark: (Create first version of interface for adding additional tacview file data (map location via drop down to start))
 
 ---
 
 ## **Visualization**
 
-COMING SOON(tm)
+:heavy_check_mark: Create first graphs (munitions) to show spent munitions based on tracked pilot(s)
+
+:x: Show flight time (time in total) based on selections
 
 ---
 
@@ -48,21 +75,40 @@ Below is a list of the current tables and columns currently used in the database
 
 ### **Tables and columns**
 
+> TABLE: **events**
+>
+> **Description:** Master list of all events captured by tacview for tracking and referencing in queries in app.
+> **Columns:** id (auto increment) | name | prettyname
+
 > TABLE: **flightlogimports**
 >
-> **Description**: This table is structured to take all tacview flightlog csv exports directly with the addition of a `flightlog_id` and `id` column for flight log import tracking / references for later retreiving. The flight logs are imported into this table by omitting the first column which has the column headers (named as the ones in this table).
+> **Description:** This table is structured to take all tacview flightlog csv exports directly with the addition of a `flightlog_id` and `id` column for flight log import tracking / references for later retreiving. The flight logs are imported into this table by omitting the first column which has the column headers (named as the ones in this table).
+> **Columns:** id (auto increment) | mission_time | primary_object_id | primary_object_name | primary_object_coalition | primary_object_pilot | primary_object_registration | primary_object_squawk | event | occurences | secondary_object_id | secondary_object_name | secondary_object_coalition | secondary_object_pilot | secondary_object_registration | secondary_object_squawk | relevant_object_id | relevant_object_name | relevant_object_coalition | relevant_object_pilot | relevant_object_registration | relevant_object_squawk | flightlog_id | server | location | id
 
 > TABLE: **flightlogs**
 >
-> **Description**: This table is for tracking the actual flight log file imports with the tool. The `id` column here is referenced to the `flightlog_id` in the `flightlogimports` table for association purposes for later database querying.
+> **Description:** This table is for tracking the actual flight log file imports with the tool. The `id` column here is referenced to the `flightlog_id` in the `flightlogimports` table for association purposes for later database querying.
+> **Columns:** id (auto increment) | tracked_pilots | server | location | filename | import_date | flight_date
 
 > TABLE: **munitions**
 >
-> **Description**: The idea with this table is to reference this data for a later implementation of total munitions used and spent with cost calculations. Later on, it may be fun to explore a system which incorporates calculating munition expendature per mission, per pilot for future use. Like an amazon.com version for bombs! No idea, just thought this would be fun and could open up some potential future moves with the system in whole. This should ideally be controlled by a UI for the user running this system for their group so they can add munitions and costs per munition.
+> **Description:** The idea with this table is to reference this data for a later implementation of total munitions used and spent with cost calculations. Later on, it may be fun to explore a system which incorporates calculating munition expendature per mission, per pilot for future use. Like an amazon.com version for bombs! No idea, just thought this would be fun and could open up some potential future moves with the system in whole. This should ideally be controlled by a UI for the user running this system for their group so they can add munitions and costs per munition.
+> **Columns:** id (auto increment) | name | currency_cost
+
+> TABLE: **locations**
+>
+> **Description:** All current maps / locations available by DCS for tracking and referencing in queries in app.
+> **Columns:** id (auto increment) | name | date_added
+
+> TABLE: **multiplayerservers**
+>
+> **Description:** table for saving user added multiplayer server information.
+> **Columns:** id (auto increment) | name | date_added
 
 > TABLE: **pilotdata**
 >
-> **Description**: This table tracks overall pilot data as it pertains to the system for statistics.
+> **Description:** This table tracks overall pilot data as it pertains to the system for statistics.
+> **Columns:** id (auto increment) | ident1 | ident2 | trackby | last_seen | date_added
 
 ## Quick start
 
@@ -73,7 +119,7 @@ cd DCS-WAR-ROOM
 npm install
 npm start
 ```
-...and you have a running desktop application on your screen.
+...and you should have a running desktop application.
 
 ## Structure of the project
 
