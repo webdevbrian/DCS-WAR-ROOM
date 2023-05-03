@@ -3,6 +3,8 @@ A digital combat simulator stats system powered by tacview.
 
 Please remember this application is VERY much alpha level and there ARE ( and will be ) plenty of bugs!
 
+**Please read this ENTIRE read me before asking questions / pull requests / adding issues etc!**
+
 ![DCS War Room Homepage](https://i.imgur.com/eimeaRR.jpg)
 
 ## Why?
