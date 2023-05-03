@@ -112,6 +112,10 @@ Below is a list of the current tables and columns currently used in the database
 
 ## Quick start
 
+This application uses electron. I'm not particularly fond of it, but it suits the purpose of my needs. I've tried other frameworks like Tauri and even Qt but unfortunately after *extensive* tries I could not get an environment stood up in the latter offerings. Nothing to say a migration couldn't happen later on, because it obviously can.
+
+I took the MVP approach in that my idea in this was to get this out as fast as possible with my own least personal amount of effort. Example: Yes I know we can support typescript, I didn't add it but we can in the future and other things like that. i.e. *"How fast can I make this knowing what I know".* So there are many movements for improvements.
+
 Make sure you have [Node.js](https://nodejs.org) installed, then type...
 ```
 git clone git@github.com:webdevbrian/DCS-WAR-ROOM.git
