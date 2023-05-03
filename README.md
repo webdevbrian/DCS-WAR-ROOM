@@ -3,6 +3,8 @@ A digital combat simulator stats system powered by tacview.
 
 Please remember this application is VERY much alpha level and there ARE ( and will be ) plenty of bugs!
 
+![DCS War Room Homepage](https://i.imgur.com/eimeaRR.jpg)
+
 ## Why?
 I wanted an app where I could track my stats regardless of which server I was on. I've been apart of a DCS flight group for about two years and one specific thing stuck out was that I'd like to start tracking my performance (and others in my flight group). Statistics like total flights, total successful landings, munitons spent, munition accuracy, and visualise them all at one glance rather than investigating in each individual tacview. This application serves purpose on doing just that, but with a multi sort / search functionality that I think other wings / DCS players may find valuable, so I published it out here to github.
 
