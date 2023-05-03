@@ -21,7 +21,7 @@ So feel free to open a PR with any fixes! I'll be structuring and adding issues 
 
 ---
 
-## **Application Flow (May 5th, 2023)**
+## **Application Flow (May 5th, 2023) CLICK TO OPEN AND MAXIMIZE**
 
 ![DCS War Room Application Flow 5/4/2023](https://i.imgur.com/Vz2wkHk.jpg)
 ---
