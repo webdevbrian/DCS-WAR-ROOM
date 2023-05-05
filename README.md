@@ -3,6 +3,8 @@ A digital combat simulator stats system powered by tacview.
 
 Please remember this application is VERY much alpha level and there ARE ( and will be ) plenty of bugs!
 
+Please also note: Stats rely on the Tacview files containing all the data. Some servers don't put their files up for download and some restrict what Tacview can see which would skew the stats. (thank you Rurouni!)
+
 ---
 
 **!!! Please read this ENTIRE read me before asking questions / pull requests / adding issues etc !!!**
