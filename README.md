@@ -31,7 +31,7 @@ So feel free to open a PR with any fixes! I'll be structuring and adding issues 
 
 ## **Application Flow (May 3rd, 2023)**
 
-https://miro.com/app/live-embed/uXjVMM1gosk=/?moveToViewport=-1084,-635,2455,2045&embedId=82969163549
+https://miro.com/app/board/uXjVMM1gosk=/?share_link_id=465486561522
 
 ---
 
