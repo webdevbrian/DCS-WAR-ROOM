@@ -597,10 +597,11 @@ let selectedLocation;
           //
           // Get all data for calculating flight times
           //
-          let flightTime = `SELECT mission_time, primary_object_name, primary_object_pilot, event, flightlog_id FROM flightlogimports WHERE ${trackedPilots()} ${serverQuery} ${locationQuery} AND (event="HasTakenOff" OR event="HasBeenDestroyed" OR event="HasLanded") ORDER BY flightlog_id DESC`;
+          let flightTime = `SELECT * FROM flightlogimports WHERE ${trackedPilots()} ${serverQuery} ${locationQuery} AND (event="HasTakenOff" OR event="HasLanded") ORDER BY flightlog_id DESC`;
           let flightTimeResults = await ipcRenderer.invoke('flightlogs', flightTime);
           let hasTakenOffArray = [];
           let hasLandedArray = [];
+          let completedFlights = [];
 
           if(flightTimeResults.length < 1) {
             flightTimeResults = [];
@@ -609,43 +610,36 @@ let selectedLocation;
 
               //
               // Get all taken off and landed events and associate them to their arrays for further analysis
+              // - Landing: Occurs when an aircraft lands at an airbase, farp or ship
               //
-              if(flightTimeResults[i].event === 'HasTakenOff') {
-                hasTakenOffArray.push(flightTimeResults[i]);
-                console.log('has taken off: ', flightTimeResults[i]);
-              }
-
               if(flightTimeResults[i].event === 'HasLanded') {
                 hasLandedArray.push(flightTimeResults[i]);
-                console.log('has landed: ', flightTimeResults[i]);
+              } else {
+                hasTakenOffArray.push(flightTimeResults[i]);
               }
             }
 
             //
-            // Compare both arrays, find mathing "has taken off" from logged "has landed" but make sure it has the same flight ID and pilot
-            // If there is  "has landed" but with no matching "has taken off" for a given pilot then disgard it.
+            // Compare the take off and landing arrays. If the landing arrays matches a takeoff (via primary object ID & matching flightlogID) push those into completedFlights with the mission time delta calculated to minutes and seconds.
+            // Do not count flights that have only take offs and no landings, or landings without any take offs. These are considered incomplete flights.
             //
-            console.log(hasTakenOffArray, hasLandedArray);
+            hasTakenOffArray.forEach(function(takeOff) {
+              // hasLandedArray.forEach(function(landing) {
+              //   if(landing.flightlog_id === takeOff.flightlog_id) {
+              //     console.log(landing);
+              //     //console.log(takeOff);
+              //   }
+              // });
+            });
 
+            console.log(hasLandedArray, hasTakenOffArray);
           }
+
+          console.log('completed', completedFlights);
 
           //
           // Calculate total flight times per module
           //
-
-          // if(allModulesResults.length > 0){
-          //   for(let i = 0; i < allModulesResults.length; i++) {
-          //     let moduleCount = 1;
-          //     let module = {
-          //       name: allModulesResults[i].primary_object_name,
-          //       pilot: allModulesResults[i].primary_object_pilot,
-          //       count: moduleCount
-          //     };
-
-          //     modules.push(module);
-          //     console.log('modules', modules);
-          //   }
-          // }
 
           let serverArray = [];
           for(let i = 0; i < mainPilotSelectResults.length; i++) {
@@ -768,5 +762,4 @@ let selectedLocation;
     },
     false
   );
-
 })();
