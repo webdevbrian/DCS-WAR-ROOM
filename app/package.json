@@ -2,7 +2,7 @@
   "name": "dcs-war-room",
   "productName": "DCS War Room",
   "description": "Starter for your Electron application",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "author": "webdevbrian / phrozen755",
   "copyright": "© 2023 Revolution Development, LLC",
