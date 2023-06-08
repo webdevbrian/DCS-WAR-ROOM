@@ -31,15 +31,16 @@ if (env.name !== "production") {
 const setApplicationMenu = () => {
   //const menus = [appMenuTemplate, editMenuTemplate];
   const menus = [appMenuTemplate];
-  if (env.name !== "production") {
+  //if (env.name !== "production") {
     menus.push(devMenuTemplate);
-  }
+  //}
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menus));
 };
 
 //
-// All IPC messages to render files (app.js / flightlogs.js etc)
+// All IPC messages to render files (app.js / flightlogs.js etc).
+// NOTE: These can all be optimized, simplified and cleaned up. I just wanted to get it working first.
 //
 const initIpc = (dialog) => {
   ipcMain.on("need-app-path", (event, arg) => {

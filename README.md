@@ -108,7 +108,7 @@ Below is a list of the current tables and columns currently used in the database
 
 > TABLE: **munitions**
 >
-> **Description:** The idea with this table is to reference this data for a later implementation of total munitions used and spent with cost calculations. Later on, it may be fun to explore a system which incorporates calculating munition expendature per mission, per pilot for future use. Like an amazon.com version for bombs! No idea, just thought this would be fun and could open up some potential future moves with the system in whole. This should ideally be controlled by a UI for the user running this system for their group so they can add munitions and costs per munition.
+ > **Description:** The idea with this table is to reference this data for a later implementation of total munitions used and spent with cost calculations. Later on, it may be fun to explore a system which incorporates calculating munition expendature per mission, per pilot for future use. Like an amazon.com version for bombs! No idea, just thought this would be fun and could open up some potential future moves with the system in whole. This should ideally be controlled by a UI for the user running this system for their group so they can add munitions and costs per munition.
 > **Columns:** id (auto increment) | name | currency_cost
 
 > TABLE: **locations**

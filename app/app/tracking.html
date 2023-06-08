@@ -30,13 +30,13 @@
       </header>
 
       <div class="p-5 mb-4 mt-5 bg-dark rounded-3 shadow rounded section-top">
-        <div class="container-fluid">
+        <div class="container-fluid text-white">
           <h1 class="display-5 fw-bold">Tracking</h1>
           <p class="col-md-8 fs-4">Here you associate your pilots by the handles they use. You want to avoid using a full and specific name association.</p>
         </div>
       </div>
 
-      <div class="row align-items-md-stretch">
+      <div class="row align-items-md-stretch text-white">
         <div class="col-xl-6 mb-4">
           <div class="h-100 p-3 bg-dark border rounded-3">
             <h2>Add pilot</h2>
@@ -68,9 +68,9 @@
         <div class="col-xl-6 mb-4">
           <div class="h-100 p-3 bg-dark border rounded-3">
             <h2>Currently tracked pilots</h2>
-            <table class="table table-striped table-hover trackedPilots">
+            <table class="table table-striped table-hover trackedPilots text-white">
               <thead>
-                <tr>
+                <tr class="text-white">
                   <th scope="col">id</th>
                   <th scope="col">Identifier</th>
                   <th scope="col">Tracked by</th>
@@ -80,7 +80,7 @@
               <tbody class="pilot-logs">
                 <!-- Dynamically rendered -->
                 <tr id="noPilots">
-                  <td colspan="4"><div>No pilots added.</div></td>
+                  <td colspan="4"><div class="text-white">No pilots added.</div></td>
                 </tr>
               </tbody>
             </table>
