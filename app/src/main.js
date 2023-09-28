@@ -12,7 +12,7 @@ import devMenuTemplate from "./menu/dev_menu_template";
 import createWindow from "./helpers/window";
 const sqlite3 = require('sqlite3');
 const rootPath = process.cwd();
-const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
+const dbPath = path.join(rootPath, 'resources', 'database', 'default_db.sqlite3');
 // console.log(rootPath);
 
 //
@@ -39,6 +39,41 @@ const setApplicationMenu = () => {
 };
 
 //
+// Create our lead database connection function to be used within all of our IPC calls ...
+//
+const createDatabaseConnection = () => {
+  return new sqlite3.Database(dbPath, (err) => {
+    if (err) console.error('Database opening error:', err);
+  });
+};
+
+//
+// Create our lead database query run function
+//
+
+const runDatabaseQuery = (sql) => {
+  return new Promise((resolve, reject) => {
+    const database = createDatabaseConnection();
+    database.serialize(() => {
+      database.all(sql, (err, data) => {
+        if (err) {
+          console.error(`Error in query: ${sql}`, err);
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+
+      database.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+      });
+    });
+  });
+};
+
+//
 // All IPC messages to render files (app.js / flightlogs.js etc).
 // NOTE: These can all be optimized, simplified and cleaned up. I just wanted to get it working first.
 //
@@ -55,491 +90,155 @@ const initIpc = (dialog) => {
   // Database IPCs
   //
   ipcMain.handle('getEvents', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Events GET): ', err);
-        });
-
-        database.serialize(() => {
-          database.all(sql, (err , data) => {
-            if(err){
-              console.log('Error (Events GET)', err);
-              return;
-            }
-            responseData = data;
-            resolve(responseData);
-            console.log("Events GET Done");
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Events).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Events GET db query: \r\n ${error}`)
-        reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Events GET Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Events GET db query: \n${error}`);
+      throw error;
+    }
   });
 
   ipcMain.handle('getLocations', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Locations GET): ', err);
-        });
-
-        database.serialize(() => {
-          database.all(sql, (err , data) => {
-            if(err){
-              console.log('Error (Locations GET)', err);
-              return;
-            }
-            responseData = data;
-            resolve(responseData);
-            console.log("Locations GET Done");
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Locations).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Locations GET db query: \r\n ${error}`)
-        reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Locations GET Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Locations GET db query: \n${error}`);
+      throw error;
+    }
   });
 
   ipcMain.handle('getServerList', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Server list GET): ', err);
-        });
-
-        database.serialize(() => {
-          database.all(sql, (err , data) => {
-            if(err){
-              console.log('Error (Server list GET)', err);
-              return;
-            }
-            responseData = data;
-            resolve(responseData);
-            console.log("Server list GET Done");
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Server list).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Server list GET db query: \r\n ${error}`)
-        reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Server list GET Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Server list GET db query: \n${error}`);
+      throw error;
+    }
   });
 
-  ipcMain.handle('addServer', (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database update error (addServer): ', err);
-        });
-
-        console.log('fired addServer event');
-
-        database.serialize(() => {
-          database.run(sql, (err , data) => {
-            if(err){
-              console.log('Error (addServer update)', err);
-              return;
-            }
-
-            console.log("addServer update Done");
-            responseData = data;
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (addServer).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With addServer UPDATE db query: \r\n ${error}`)
-        reject();
-      }
-    });
+  ipcMain.handle('addServer', async (event, arg) => {
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("addServer update Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With addServer UPDATE db query: \n${error}`);
+      throw error;
+    }
   });
 
-  ipcMain.on('deleteServer', (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        console.log('Server delete fired: ', arg);
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Server Delete): ', err);
-        });
-
-        database.serialize(() => {
-          database.run(sql, (err , data) => {
-            if(err){
-              console.log(err);
-              return;
-            }
-
-            responseData = data; // If anything TODO: Respond with deleted row information
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Server Delete).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Server delete db query: \r\n ${error}`)
-        reject();
-      }
-    });
+  ipcMain.on('deleteServer', async (event, arg) => {
+    try {
+      const sql = arg;
+      await runDatabaseQuery(sql);
+      console.log('Server delete fired:', arg);
+      event.reply('serverDeleted');
+    } catch (error) {
+      console.error(`Error With Server delete db query: \n${error}`);
+    }
   });
 
   ipcMain.handle('flightlogs', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error: ', err);
-        });
-
-        database.serialize(() => {
-          database.all(sql , (err , data) => {
-            if(err){
-              console.log(err);
-              return;
-            }
-
-            responseData = data;
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection.');
-          });
-        });
-      } catch (error) {
-          console.log(`Error With Select ALL(): \r\n ${error}`)
-          reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Select ALL(): \n${error}`);
+      throw error;
+    }
   });
 
-  ipcMain.handle('updateTacview', (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database update error (updateTacview): ', err);
-        });
-
-        console.log('fired update tacview event');
-
-        database.serialize(() => {
-          database.run(sql, (err , data) => {
-            if(err){
-              console.log('Error (updateTacview update)', err);
-              return;
-            }
-
-            console.log("updateTacview update Done");
-            responseData = data;
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (updateTacview).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With updateTacview UPDATE db query: \r\n ${error}`)
-        reject();
-      }
-    });
+  ipcMain.handle('updateTacview', async (event, arg) => {
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("updateTacview update Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With updateTacview UPDATE db query: \n${error}`);
+      throw error;
+    }
   });
 
-  ipcMain.handle('getFlightLog', (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Flightlog): ', err);
-        });
-
-        database.serialize(() => {
-          database.all(sql, (err , data) => {
-            if(err){
-              console.log('Error (Flightlog GET)', err);
-              return;
-            }
-            responseData = data;
-            resolve(responseData);
-            console.log("Flightlog GET Done");
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Flightlog).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Flightlog GET db query: \r\n ${error}`)
-        reject();
-      }
-    });
+  ipcMain.handle('getFlightLog', async (event, arg) => {
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Flightlog GET Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Flightlog GET db query: \n${error}`);
+      throw error;
+    }
   });
 
-  ipcMain.on('deleteFlight', (event, arg) => {
-    const sql = arg;
-    const database = new sqlite3.Database(dbPath, (err) => {
-      if (err) console.error('Database opening error: ', err);
-    });
-
-    database.serialize(() => {
-      database.run(sql, (err) => {
-        event.reply('flightlogsDeleteFlight', err);
-      });
-
-      database.close((err) => {
-        if (err) {
-          console.error(err.message);
-        }
-
-        console.log('Closed the database connection (Delete flight).');
-      });
-    });
+  ipcMain.on('deleteFlight', async (event, arg) => {
+    try {
+      const sql = arg;
+      await runDatabaseQuery(sql);
+      console.log('Flight delete fired:', arg);
+      event.reply('flightDeleted');
+    } catch (error) {
+      console.error(`Error With Flight delete db query: \n${error}`);
+    }
   });
 
   ipcMain.handle('addFlightLog', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Add flightlog): ', err);
-        });
-
-        database.serialize(() => {
-          database.run(sql, (err) => {
-            if(err){
-              console.log('Insertion Error (Add flightlog)', err);
-              return;
-            }
-
-            console.log("Insertion Done");
-          });
-
-          //
-          // Get the last row (last updated) to send back to get added to the flightlog UI
-          //
-          database.all('SELECT * FROM flightlogs ORDER BY id DESC LIMIT 1;' , (err , data) => {
-            if(err){
-              console.log(err);
-              return;
-            }
-
-            responseData = data;
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Add flightlog).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Add flightlog query: \r\n ${error}`)
-        reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Insertion Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Add flightlog query: \n${error}`);
+      throw error;
+    }
   });
 
   ipcMain.handle('getPilots', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Pilot Track GET): ', err);
-        });
-
-        database.serialize(() => {
-          database.all(sql, (err , data) => {
-            if(err){
-              console.log('Error (Pilot Track GET)', err);
-              return;
-            }
-            responseData = data;
-            resolve(responseData);
-            console.log("Pilot GET Done");
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Pilot Track).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Pilot track add db query: \r\n ${error}`)
-        reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Pilot GET Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Pilot Track GET db query: \n${error}`);
+      throw error;
+    }
   });
 
   ipcMain.handle('addPilot', async (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Pilot Track): ', err);
-        });
-
-        database.serialize(() => {
-          database.run(sql, (err) => {
-            if(err){
-              console.log('Insertion Error (Pilot Track)', err);
-              return;
-            }
-
-            console.log("Insertion Done");
-          });
-
-          //
-          // Get the last row (last updated) to send back
-          //
-          database.all('SELECT * FROM pilotdata ORDER BY id DESC LIMIT 1;' , (err , data) => {
-            if(err){
-              console.log(err);
-              return;
-            }
-
-            responseData = data;
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Pilot Track).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Pilot track add db query: \r\n ${error}`)
-        reject();
-      }
-    });
+    try {
+      const sql = arg;
+      const responseData = await runDatabaseQuery(sql);
+      console.log("Insertion Done");
+      return responseData;
+    } catch (error) {
+      console.error(`Error With Pilot track add db query: \n${error}`);
+      throw error;
+    }
   });
 
-  ipcMain.on('deletePilot', (event, arg) => {
-    let responseData;
-
-    return new Promise((resolve, reject) => {
-      try {
-        console.log('Pilot delete fired: ', arg);
-        const sql = arg;
-        const database = new sqlite3.Database(dbPath, (err) => {
-          if (err) console.error('Database opening error (Pilot Track): ', err);
-        });
-
-        database.serialize(() => {
-          //
-          // Get the last row (last updated) to send back
-          //
-          database.run(sql, (err , data) => {
-            if(err){
-              console.log(err);
-              return;
-            }
-
-            responseData = data;
-            resolve(responseData);
-          });
-
-          database.close((err) => {
-            if (err) {
-              console.error(err.message);
-            }
-
-            console.log('Closed the database connection (Pilot Delete).');
-          });
-        });
-      } catch (error) {
-        console.log(`Error With Pilot track delete db query: \r\n ${error}`)
-        reject();
-      }
-    });
+  ipcMain.on('deletePilot', async (event, arg) => {
+    try {
+      const sql = arg;
+      await runDatabaseQuery(sql);
+      console.log('Pilot delete fired:', arg);
+      event.reply('pilotDeleted');
+    } catch (error) {
+      console.error(`Error With Pilot track delete db query: \n${error}`);
+    }
   });
 
   //

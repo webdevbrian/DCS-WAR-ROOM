@@ -2,7 +2,7 @@ export function getCSV(file) {
   if(!file) return;
   return new Promise(function(resolve, reject) {
     //
-    // We ultimately need to check if tacview has succesffully created this csv file.
+    // We ultimately need to check if tacview has successfully created this csv file.
     //
     require('fs').readFile(file, "utf8", function(err, data) {
       if (err) {
