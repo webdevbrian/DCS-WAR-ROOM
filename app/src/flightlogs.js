@@ -1,12 +1,15 @@
+import path from "path";
 import "./stylesheets/main.css";
 import { ipcRenderer } from "electron";
 import jetpack from "fs-jetpack";
-const fs = require('fs');
-const exec = require('child_process').exec;
-const rootPath = process.cwd();
+import fs from 'fs';
+import { exec } from 'child_process';
 import { getCSV } from './utils/getCSV.js';
-const sqlite3 = require('sqlite3');
-const dbPath = rootPath + '\\resources\\database\\default_db.sqlite3';
+import sqlite3 from 'sqlite3';
+
+const rootPath = process.cwd();
+const dbPath = path.join(rootPath, 'resources', 'database', 'default_db.sqlite3');
+
 
 let tableRowId;
 let tacviewLocation;
@@ -24,33 +27,31 @@ let flightLogModal = new bootstrap.Modal(
   {}
 );
 
-let addedServers = function(servers){
-  addedServerList = '';
-  for(let i = 0; i < servers.length; i++) {
-    addedServerList += `<li class="server-${servers[i].id}"><span id="server-${servers[i].id}" class="btn btn-danger delete-server"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></span> ${servers[i].name}</li>`;
+const addedServers = function(servers) {
+  let addedServerList = '';
+  for (const server of servers) {
+    addedServerList += `<li class="server-${server.id}"><span id="server-${server.id}" class="btn btn-danger delete-server"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></span> ${server.name}</li>`;
   }
 
   if (servers.length < 1) {
-    addedServerList = '<li id="noServersAdded">No servers added.</li>'
+    addedServerList = '<li id="noServersAdded">No servers added.</li>';
   }
 
   return addedServerList;
 };
 
-let serverAddRemove = function(servers) {
+const serverAddRemove = function(servers) {
+  const modalTitle = document.getElementById('flightLogModalTitle');
+  const modalBody = document.getElementById('flightLogModalBody');
+  const modalFooter = document.getElementById('flightLogModalFooter');
+  
+  // Remove previous controls if they exist
+  document.getElementById('saveServer')?.remove();
+  document.getElementById('deleteTacviewConfirm')?.remove();
+  document.getElementById('saveTacview')?.remove();
 
-  //
-  // Hide previous controls if they exist
-  //
-  const saveServerButton = document.getElementById('saveServer');
-  const deleteTacviewButton = document.getElementById('deleteTacviewConfirm');
-  const saveTacviewButton = document.getElementById('saveTacview');
-  saveServerButton?.remove();
-  deleteTacviewButton?.remove();
-  saveTacviewButton?.remove();
-
-  document.getElementById('flightLogModalTitle').innerHTML = 'Add / Remove Server';
-  document.getElementById('flightLogModalBody').innerHTML = `
+  modalTitle.innerHTML = 'Add / Remove Server';
+  modalBody.innerHTML = `
     <h5>Currently added servers:</h5>
     <div class="serverModalList">
       <ul class="serverModalListUL">
@@ -70,7 +71,7 @@ let serverAddRemove = function(servers) {
       </table>
     </div>
   `;
-  document.getElementById('flightLogModalFooter').innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveServer">Add</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
+  modalFooter.innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveServer">Add</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
 
   flightLogModal.show();
 }
@@ -113,118 +114,70 @@ let deleteTacviewModal = function(tableRowID) {
   flightLogModal.show();
 }
 
-let tacviewModalEdit = function(flightLog) {
-  (async () => {
-    try {
+const tacviewModalEdit = async (flightLog) => {
+  try {
+    // Remove previous controls if they exist
+    document.getElementById('deleteTacviewConfirm')?.remove();
+    document.getElementById('saveTacview')?.remove();
+    document.getElementById('saveServer')?.remove();
 
-      //
-      // Hide previous controls if they exist
-      //
-      const saveServerButton = document.getElementById('saveServer');
-      const deleteButton = document.getElementById('deleteTacviewConfirm');
-      const saveButton = document.getElementById('saveTacview');
-      deleteButton?.remove();
-      saveButton?.remove();
-      saveServerButton?.remove();
+    // Map location dropdown options
+    const locationOptions = [
+      { value: 0, label: 'Caucuses' },
+      { value: 1, label: 'Nevada' },
+      { value: 2, label: 'Normandy' },
+      { value: 3, label: 'Persian Gulf' },
+      { value: 4, label: 'The Channel' },
+      { value: 5, label: 'Syria' },
+      { value: 6, label: 'Marianas Islands' },
+      { value: 7, label: 'South Atlantic' },
+    ];
 
-      //
-      // Build map location dropdown and set selected options if one is saved previously
-      // NULL = none set, 0 = caucuses, 1 = nevada, 2 = normandy, 3 = persian gulf, 4 = the channel, 5 = syria, 6 = marianas, 7 = south atlantic
-      // TODO: Redo this - this was done quickly, this should be a for loop with a set of locations based on an array of locations
-      //
-      let selected,
-          selected0,
-          selected1,
-          selected2,
-          selected3,
-          selected4,
-          selected5,
-          selected6,
-          selected7 = '';
+    const locationSelectOptions = locationOptions.map((option) => {
+      const selected = flightLog['location'] === option.value ? 'selected' : '';
+      return `<option value="${option.value}" ${selected}>${option.label}</option>`;
+    });
 
-      if(!flightLog['location']) {
-        selected = 'selected';
-      } else if(flightLog['location'] == 0) {
-        selected0 = 'selected';
-      } else if(flightLog['location'] == 1){
-        selected1 = 'selected';
-      } else if(flightLog['location'] == 2){
-        selected2 = 'selected';
-      } else if(flightLog['location'] == 3){
-        selected3 = 'selected';
-      } else if(flightLog['location'] == 4){
-        selected4 = 'selected';
-      } else if(flightLog['location'] == 5){
-        selected5 = 'selected';
-      } else if(flightLog['location'] == 6){
-        selected6 = 'selected';
-      } else if(flightLog['location'] == 7){
-        selected7 = 'selected';
-      };
+    // Tacview server list based on user saved DCS servers
+    const servers = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers ORDER BY id DESC');
+    const serverSelectOptions = servers.map((server) => {
+      const selected = flightLog['server'] === server.id ? 'selected' : '';
+      return `<option value="${server.id}" ${selected}>${server.name}</option>`;
+    });
 
-      //
-      // Build tacview server list based on user saved DCS servers
-      //
-      let select,
-          selectedOption = '';
-      const servers = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers ORDER BY id DESC');
+    // Populate modal with tacview editable data fields / inputs
+    const modalTitle = document.getElementById('flightLogModalTitle');
+    const modalBody = document.getElementById('flightLogModalBody');
+    const modalFooter = document.getElementById('flightLogModalFooter');
 
-      select = `
+    modalTitle.innerHTML = 'Editing Tacview #' + flightLog['id'];
+    modalBody.innerHTML = `
+      <div class="row">
+        <div class="col-md-12">
+          <p>DCS Map:</p>
+          <select id="tacviewLocation" class="form-select form-select-lg mb-3">
+            <option value="69">Select tacview map location</option>
+            ${locationSelectOptions.join('')}
+          </select>
+        </div>
+      </div>
       <div class="row">
         <div class="col-md-12">
           <p>DCS Multiplayer Server:</p>
           <select id="tacviewServer" class="form-select form-select-lg mb-3">
             <option value="69">Select a server</option>
-      `;
-
-      for(let i = 0; i < servers.length; i++) {
-        selectedOption = '';
-        if(servers[i].id === parseInt(flightLog['server'])) {
-          selectedOption = 'selected';
-        }
-
-        select += `
-          <option value="${servers[i].id}" ${selectedOption}>${servers[i].name}</option>
-        `
-      }
-
-      select += `
+            ${serverSelectOptions.join('')}
           </select>
         </div>
       </div>
-      `;
+    `;
 
-      //
-      // Populate modal with tacview editable data fields / inputs
-      //
-      document.getElementById('flightLogModalTitle').innerHTML = 'Editing Tacview #' + flightLog['id'];
-      document.getElementById('flightLogModalBody').innerHTML = `
-      <div class="row">
-        <div class="col-md-12">
-          <p>DCS Map:</p>
-          <select id="tacviewLocation" class="form-select form-select-lg mb-3">
-            <option value="69" ${selected}>Select tacview map location</option>
-            <option value="0" ${selected0}>Caucuses</option>
-            <option value="1" ${selected1}>Nevada</option>
-            <option value="2" ${selected2}>Normandy</option>
-            <option value="3" ${selected3}>Persian Gulf</option>
-            <option value="4" ${selected4}>The Channel</option>
-            <option value="5" ${selected5}>Syria</option>
-            <option value="6" ${selected6}>Marianas Islands</option>
-            <option value="7" ${selected7}>South Atlantic</option>
-          </select>
-        </div>
-      </div>
-      ${select}
-      `;
+    modalFooter.innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveTacview">Save</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
 
-      document.getElementById('flightLogModalFooter').innerHTML = '<button type="button" class="btn btn-secondary btn-success" id="saveTacview">Save</button><button type="button" class="btn btn-secondary" id="closeModal">Close</button>';
-
-      flightLogModal.show();
-    } catch(err) {
-      console.log(err);
-    }
-  })();
+    flightLogModal.show();
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 //
@@ -251,119 +204,97 @@ ipcRenderer.on("flightlogsDeleteFlight", () => {
 // Initially get all flightlogs from database
 //
 async function loadFlightLogs(refresh, initial) {
-  (async () => {
-    try {
-      const flightLogs = await ipcRenderer.invoke('flightlogs', 'SELECT * FROM flightlogs ORDER BY id DESC;');
-      let flightLogsTable = document.querySelector(".flight-logs");
+  try {
+    const flightLogs = await ipcRenderer.invoke('flightlogs', 'SELECT * FROM flightlogs ORDER BY id DESC;');
+    const flightLogsTable = document.querySelector(".flight-logs");
 
-      if(refresh) {
-        flightLogsTable.innerHTML = '';
-      };
-
-      for(let i = 0; i < flightLogs.length; i++) {
-
-        //
-        // Get and associate name of saved tacview location for UI if we have it
-        //
-        let locationName;
-        if(flightLogs[i].location) {
-          const location = await ipcRenderer.invoke('getLocations', 'SELECT name FROM locations WHERE id=' + flightLogs[i].location + ' LIMIT 1');
-          if(location[0] !== undefined){ // The server was deleted and there are no results in the servers table
-            locationName = location[0].name;
-          } else {
-            locationName = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ff0000" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>Not set!';
-          }
-        } else {
-          locationName = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ff0000" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>Not set!';
-        }
-
-        //
-        // Get and associate name of saved tacview server for UI if we have it
-        //
-        let serverName;
-        if(flightLogs[i].server) {
-          const server = await ipcRenderer.invoke('getServerList', 'SELECT name FROM multiplayerservers WHERE id=' + flightLogs[i].server + ' LIMIT 1');
-          if(server[0] !== undefined){ // The server was deleted and there are no results in the servers table
-            serverName = server[0].name;
-          } else {
-            serverName = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ff0000" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>Not set!';
-          }
-        } else {
-          serverName = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ff0000" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>Not set!';
-        }
-
-        //
-        // Format dates
-        //
-        const import_date1 = new Date(flightLogs[i].import_date);
-        const date1Month = import_date1.getMonth() + 1;
-        const import_date = import_date1.getFullYear() + '-' + ('0' + date1Month).substr(-2) + '-' + ('0' + import_date1.getDate()).substr(-2) + ' @ ' + ('0' + import_date1.getHours()).substr(-2) + ':' + ('0' + import_date1.getMinutes()).substr(-2);
-
-        const flight_date1 = new Date(flightLogs[i].flight_date);
-        const date2Month = flight_date1.getMonth() + 1;
-        const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
-
-        //
-        // Append to flightlog table
-        //
-        let flightLogsTableRow = document.createElement("tr");
-        flightLogsTable.appendChild(flightLogsTableRow).setAttribute('id', 'row-' + flightLogs[i].id);
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = flightLogs[i].id;
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = flightLogs[i].filename;
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = serverName;
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = locationName;
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = import_date;
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = flight_date;
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLogs[i].id + '" class="btn btn-secondary edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"><path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z"/></svg></button>';
-
-        flightLogsTableRow.appendChild(document.createElement("td"))
-          .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLogs[i].id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
-      };
-
-      document.querySelectorAll('.flight-logs')
-      .forEach(function(el) {
-        el.querySelectorAll('td').forEach(function(el) {
-          el.setAttribute('class', 'align-middle')
-        });
-      });
-
-      const loading = document.getElementById('loading');
-      loading?.remove();
-
-      if(flightLogsTable.childElementCount > 1) {
-        const noFlightLogs = document.getElementById('noFlightLogs');
-        noFlightLogs?.remove();
-      }
-
-      // //
-      // // Only initialize the table on first load
-      // //
-      // if(initial && flightLogs.length > 1){
-      //   $('#flightlogs').DataTable({
-      //     paging: false,
-      //     "order": [[0, 'desc']],
-      //     scrollY: 400
-      //   });
-      // }
-    } catch(err) {
-      console.log(err);
+    if (refresh) {
+      flightLogsTable.innerHTML = '';
     }
-  })();
+
+    for (const log of flightLogs) {
+      const locationId = log.location || -1;
+      const serverId = log.server || -1;
+
+      const [location] = await ipcRenderer.invoke('getLocations', `SELECT name FROM locations WHERE id=${locationId} LIMIT 1`);
+      const locationName = location ? location.name : 'Not set';
+
+      const [server] = await ipcRenderer.invoke('getServerList', `SELECT name FROM multiplayerservers WHERE id=${serverId} LIMIT 1`);
+      const serverName = server ? server.name : 'Not set';
+
+      const importDate = formatDate(log.import_date);
+      const flightDate = formatDate(log.flight_date);
+
+      const flightLogsTableRow = document.createElement("tr");
+      flightLogsTable.appendChild(flightLogsTableRow).setAttribute('id', 'row-' + log.id);
+
+      appendTableCell(flightLogsTableRow, log.id);
+      appendTableCell(flightLogsTableRow, log.filename);
+      appendTableCell(flightLogsTableRow, serverName);
+      appendTableCell(flightLogsTableRow, locationName);
+      appendTableCell(flightLogsTableRow, importDate);
+      appendTableCell(flightLogsTableRow, flightDate);
+
+      const editButton = createButton(`rowEdit-${log.id}`, "btn btn-secondary edit", "Edit", "bi bi-pen");
+      const deleteButton = createButton(`rowDelete-${log.id}`, "btn btn-danger delete", "Delete", "bi bi-trash");
+
+      flightLogsTableRow.appendChild(document.createElement("td")).appendChild(editButton);
+      flightLogsTableRow.appendChild(document.createElement("td")).appendChild(deleteButton);
+    }
+
+    document.querySelectorAll('.flight-logs td').forEach(el => el.setAttribute('class', 'align-middle'));
+
+    removeElementById('loading');
+
+    if (flightLogsTable.childElementCount > 1) {
+      removeElementById('noFlightLogs');
+    }
+
+    // Initialize the table only on the first load
+    if (initial && flightLogs.length > 1) {
+      $('#flightlogs').DataTable({
+        paging: false,
+        "order": [[0, 'desc']],
+        scrollY: 400
+      });
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
+
+function formatDate(date) {
+  const formattedDate = new Date(date);
+  const year = formattedDate.getFullYear();
+  const month = ('0' + (formattedDate.getMonth() + 1)).slice(-2);
+  const day = ('0' + formattedDate.getDate()).slice(-2);
+  const hours = ('0' + formattedDate.getHours()).slice(-2);
+  const minutes = ('0' + formattedDate.getMinutes()).slice(-2);
+  return `${year}-${month}-${day} @ ${hours}:${minutes}`;
+}
+
+function appendTableCell(row, content) {
+  const cell = row.appendChild(document.createElement("td")).appendChild(document.createElement("div"));
+  cell.innerHTML = content;
+}
+
+function createButton(id, className, label, iconClass) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = id;
+  button.className = className;
+  //  button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="${iconClass}" viewBox="0 0 16 16"></svg>${label}`;
+  button.innerHTML = `<div class="${iconClass}">${label}</div>`;
+  return button;
+}
+
+function removeElementById(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.remove();
+  }
+}
+
 loadFlightLogs(false, true);
 
 //
@@ -378,37 +309,45 @@ function getTacviewFileName(fullPath) {
 //
 // Disable UI controls so user can't click anything while the tacview command is runnning behind the scenes...
 //
-function disableUI(disable){
-  if(disable){
-    document.querySelector("title").innerHTML = "DCS War Room v" + manifest.version + ' !!!IMPORTING TACVIEW!!!';
-    document.querySelector(".importing").style.display = "inline";
-    document.querySelector(".import-tacview").style.display = "none";
-    document.querySelector(".add-server").classList.add("disabled");
-    document.querySelector("body").style.cursor = 'wait';
-    document.querySelectorAll('.nav-link')
-    .forEach(function(element) {
-      element.classList.add("disabled")
+function disableUI(disable) {
+  const title = document.querySelector("title");
+  const importingElement = document.querySelector(".importing");
+  const importTacviewElement = document.querySelector(".import-tacview");
+  const addServerElement = document.querySelector(".add-server");
+  const body = document.querySelector("body");
+  const navLinks = document.querySelectorAll('.nav-link');
+  const deleteButtons = document.querySelectorAll('.delete');
+
+  if (disable) {
+    title.innerHTML = "DCS War Room v" + manifest.version + ' !!!IMPORTING TACVIEW!!!';
+    importingElement.style.display = "inline";
+    importTacviewElement.style.display = "none";
+    addServerElement.classList.add("disabled");
+    body.style.cursor = 'wait';
+
+    navLinks.forEach(function (element) {
+      element.classList.add("disabled");
     });
-    document.querySelectorAll('.delete')
-    .forEach(function(element) {
-      element.classList.add("disabled")
+
+    deleteButtons.forEach(function (element) {
+      element.classList.add("disabled");
     });
   } else {
-    document.querySelector("title").innerHTML = "DCS War Room v" + manifest.version;
-    document.querySelector(".importing").style.display = "none";
-    document.querySelector(".import-tacview").style.display = "inline";
-    document.querySelector(".add-server").classList.remove("disabled")
-    document.querySelector("body").style.cursor = 'default';
-    document.querySelectorAll('.nav-link')
-    .forEach(function(element) {
-      element.classList.remove("disabled")
+    title.innerHTML = "DCS War Room v" + manifest.version;
+    importingElement.style.display = "none";
+    importTacviewElement.style.display = "inline";
+    addServerElement.classList.remove("disabled");
+    body.style.cursor = 'default';
+
+    navLinks.forEach(function (element) {
+      element.classList.remove("disabled");
     });
-    document.querySelectorAll('.delete')
-    .forEach(function(element) {
-      element.classList.remove("disabled")
+
+    deleteButtons.forEach(function (element) {
+      element.classList.remove("disabled");
     });
   }
-};
+}
 
 //
 // Execute cli commands
@@ -543,10 +482,10 @@ function execute(command, props) {
                   .appendChild(document.createElement("div")).innerHTML = flight_date;
 
                 flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLog.id + '" class="btn btn-secondary edit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"><path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001zm-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708l-1.585-1.585z"/></svg></button>';
+                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLog.id + '" class="btn btn-secondary edit">Edit</button>';
 
                 flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLog.id + '" class="btn btn-danger delete"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg></button>';
+                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLog.id + '" class="btn btn-danger delete">Delete</button>';
 
                 if(flightLogsTable.childElementCount > 1) {
                   const noFlightLogs = document.getElementById('noFlightLogs');
@@ -596,7 +535,6 @@ function execute(command, props) {
                     $flightLogID: flightId
                   });
                 }
-
 
                 //
                 // Delete the CSV file
