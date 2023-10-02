@@ -10,7 +10,6 @@ import sqlite3 from 'sqlite3';
 const rootPath = process.cwd();
 const dbPath = path.join(rootPath, 'resources', 'database', 'default_db.sqlite3');
 
-
 let tableRowId;
 let tacviewLocation;
 let tacviewServer;
@@ -357,208 +356,93 @@ function execute(command, props) {
 
   exec(command, props, (error, stdout, stderr) => {
     if (error || stderr || stdout) {
-
-      //
-      // Enable UI
-      //
       disableUI(false);
+      console.log(`error: ${error?.message} stderr: ${stderr} stdout: ${stdout}`);
+    } else if (props[0] === 'tacview') {
+      const fileName = props[1];
+      const date = fileName.substring(8, 23);
+      console.log('date:', date);
+      console.log('filename:', fileName);
+      const importDate = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}T${date.slice(9, 11)}:${date.slice(11, 13)}:${date.slice(13, 15)}`;
+      const currentDate = new Date().toISOString();
+      const database = new sqlite3.Database(dbPath, (err) => {
+        if (err) console.error('Database opening error (Flight Log Import): ', err);
+      });
+      getCSV(rootPath + '\\' + tacviewFileName + '.csv')
+        .then((result) => {
+          console.log('CSV log result:', result);
+          database.serialize(async () => {
+            const flightLogData = await ipcRenderer.invoke('addFlightLog', `INSERT INTO flightlogs (filename, import_date, flight_date) VALUES("${tacviewFileName}", "${currentDate}", "${importDate}");`);
+            const flightLog = flightLogData[0];
+            const flightId = flightLog.id;
+            const date1 = new Date(flightLog.import_date);
+            const date2 = `${date1.getFullYear()}-${('0' + (date1.getMonth() + 1)).substr(-2)}-${('0' + date1.getDate()).substr(-2)} @ ${('0' + date1.getHours()).substr(-2)}:${('0' + date1.getMinutes()).substr(-2)}`;
+            const flight_date1 = new Date(flightLog.flight_date);
 
-      console.log(`error: ${error.message} ` + `stderr: ${stderr}` + `stdout: ${stdout}`);
-    } else {
+            console.log('flight date', flightLog.flight_date);
 
-      //
-      // Check the execution type
-      // Current types are STRING: tacview
-      //
-      if(props[0] ==='tacview') {
-        let fileName = props[1];
-        let flightId;
-
-        //
-        // Get and convert tacview file date from filename to ISO
-        //
-        let date = fileName.substring(0, 23);
-            date = date.substring(8);
-        let dateYear = date.slice(0, 4);
-        let dateMonth = date.slice(4,6);
-        let dateDay = date.slice(6,8);
-        let dateHour = date.slice(9,11);
-        let dateMinute = date.slice(11,13);
-        let dateSeconds = date.slice(13,17);
-        let importDate = dateYear + '-' + dateMonth + '-' + dateDay + 'T' + dateHour + ':' + dateMinute + ':' + dateSeconds;
-
-        //
-        // Get and convert current date and time to ISO
-        //
-        const currentDate = new Date().toISOString();
-
-        //
-        // Handle the SQLite database import here
-        // After successful import delete the old CSV file for cleanup
-        //
-        (async () => {
-
-          //
-          // Insert CSV rendered from Tacview generation into flightlogimports
-          // + Add flightlog id for inserted flight log into flightlogimport flightlog_id column
-          //
-          let CSVFileLocation = rootPath + '\\' + tacviewFileName + '.csv';
-          console.log('CSV:', CSVFileLocation);
-          let csvPromise = getCSV(CSVFileLocation);
-          csvPromise.then(function(result) {
-            console.log('CSV log result:', result);
-
-            const database = new sqlite3.Database(dbPath, (err) => {
-              if (err) console.error('Database opening error (Flight Log Import): ', err);
+            const flight_date = `${flight_date1.getFullYear()}-${('0' + (flight_date1.getMonth() + 1)).substr(-2)}-${('0' + flight_date1.getDate()).substr(-2)} @ ${('0' + flight_date1.getHours()).substr(-2)}:${('0' + flight_date1.getMinutes()).substr(-2)}`;
+            const location = ['Caucuses', 'Nevada', 'Normandy', 'Persian Gulf', 'The Channel', 'Syria', 'Mariana Islands', 'South Atlantic'][flightLog.location] || 'Not set';
+            const server = flightLog.server || 'Not set';
+            const flightLogsTable = document.querySelector(".flight-logs");
+            const flightLogsTableRow = document.createElement("tr");
+            flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild).setAttribute('id', 'row-' + flightLog.id);
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = flightLog.id;
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = flightLog.filename;
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = server;
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = location;
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = date2;
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = flight_date;
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLog.id + '" class="btn btn-secondary edit">Edit</button>';
+            flightLogsTableRow.appendChild(document.createElement("td")).appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLog.id + '" class="btn btn-danger delete">Delete</button>';
+            if (flightLogsTable.childElementCount > 1) {
+              const noFlightLogs = document.getElementById('noFlightLogs');
+              noFlightLogs?.remove();
+            }
+            document.querySelectorAll('.flight-logs').forEach(function(el) {
+              el.querySelectorAll('td').forEach(function(el) {
+                el.setAttribute('class', 'align-middle')
+              });
             });
-
-            database.serialize(function() {
-              (async () => {
-                const flightLogData = await ipcRenderer.invoke('addFlightLog', 'INSERT INTO flightlogs (filename, import_date, flight_date) VALUES("' + tacviewFileName + '", "' + currentDate + '", "' + importDate + '");');
-                const flightLog = flightLogData[0];
-                flightId = flightLog.id;
-
-                //
-                // Format dates
-                //
-                const date1 = new Date(flightLog.import_date);
-                const date1Month = date1.getMonth() + 1;
-                const date2 = date1.getFullYear()+'-' +('0' + date1Month).substr(-2) + '-' + ('0' + date1.getDate()).substr(-2) + ' @ ' + ('0' + date1.getHours()).substr(-2) + ':' + ('0' + date1.getMinutes()).substr(-2);
-
-                const flight_date1 = new Date(flightLog.flight_date);
-                const date2Month = flight_date1.getMonth() + 1;
-                const flight_date = flight_date1.getFullYear() + '-' + ('0' + date2Month).substr(-2) + '-' + ('0' + flight_date1.getDate()).substr(-2) + ' @ ' + ('0' + flight_date1.getHours()).substr(-2) + ':' + ('0' + flight_date1.getMinutes()).substr(-2);
-
-                let location = '';
-                if(flightLog.location == '0') {
-                  location = 'Caucuses';
-                } else if(flightLog.location == '1') {
-                  location = 'Nevada';
-                } else if(flightLog.location == '2') {
-                  location = 'Normandy';
-                } else if(flightLog.location == '3') {
-                  location = 'Persian Gulf';
-                } else if(flightLog.location == '4') {
-                  location = 'The Channel';
-                } else if(flightLog.location == '5') {
-                  location = 'Syria';
-                } else if(flightLog.location == '6') {
-                  location = 'Mariana Islands';
-                } else if(flightLog.location == '7') {
-                  location = 'South Atlantic';
-                } else {
-                  location = 'Not set'
-                }
-
-                let server = '';
-                if(flightLog.server === null) {
-                  server = 'Not set'
-                }
-
-                //
-                // Add Row to UI (add to top of table as table is ordered DESC sort)
-                //
-                let flightLogsTable = document.querySelector(".flight-logs");
-                let flightLogsTableRow = document.createElement("tr");
-
-                flightLogsTable.insertBefore(flightLogsTableRow, flightLogsTable.firstChild).setAttribute('id', 'row-' + flightLog.id);
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = flightLog.id;
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = flightLog.filename;
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = server;
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = location;
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = date2;
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = flight_date;
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowEdit-' + flightLog.id + '" class="btn btn-secondary edit">Edit</button>';
-
-                flightLogsTableRow.appendChild(document.createElement("td"))
-                  .appendChild(document.createElement("div")).innerHTML = '<button type="button" id="rowDelete-' + flightLog.id + '" class="btn btn-danger delete">Delete</button>';
-
-                if(flightLogsTable.childElementCount > 1) {
-                  const noFlightLogs = document.getElementById('noFlightLogs');
-                  noFlightLogs?.remove();
-                }
-
-                const loading = document.getElementById('loading');
-                loading?.remove();
-
-                document.querySelectorAll('.flight-logs')
-                .forEach(function(el) {
-                  el.querySelectorAll('td').forEach(function(el) {
-                    el.setAttribute('class', 'align-middle')
-                  });
-                });
-
-                //
-                // Insert items from CSV into flightlogimports table
-                //
-                for(let i = 0; i < result.length; i++) {
-                  let log = result[i];
-                  database.run("INSERT INTO flightlogimports"
-                    + " (mission_time, primary_object_id, primary_object_name, primary_object_coalition, primary_object_pilot, primary_object_registration, primary_object_squawk, event, occurences, secondary_object_id, secondary_object_name, secondary_object_coalition, secondary_object_pilot, secondary_object_registration, secondary_object_squawk, relevant_object_id, relevant_object_name, relevant_object_coalition, relevant_object_pilot, relevant_object_registration, relevant_object_squawk, flightlog_id) VALUES"
-                    + " ($missionTime, $primaryObjectID, $primaryObjectName, $PrimaryObjectCoalition, $PrimaryObjectPilot, $PrimaryObjectRegistration, $PrimaryObjectSquawk, $Event, $Occurences, $SecondaryObjectID, $SecondaryObjectName, $SecondaryObjectCoalition, $SecondaryObjectPilot, $SecondaryObjectRegistration, $SecondaryObjectSquawk, $RelevantObjectID, $RelevantObjectName, $RelevantObjectCoalition, $RelevantObjectPilot, $RelevantObjectRegistration, $RelevantObjectSquawk, $flightLogID)",
-                  {
-                    $missionTime: log.missionTime,
-                    $primaryObjectID: log.primaryObjectID,
-                    $primaryObjectName: log.primaryObjectName,
-                    $PrimaryObjectCoalition: log.PrimaryObjectCoalition,
-                    $PrimaryObjectPilot: log.PrimaryObjectPilot,
-                    $PrimaryObjectRegistration: log.PrimaryObjectRegistration,
-                    $PrimaryObjectSquawk: log.PrimaryObjectSquawk,
-                    $Event: log.Event,
-                    $Occurences: log.Occurences,
-                    $SecondaryObjectID: log.SecondaryObjectID,
-                    $SecondaryObjectName: log.SecondaryObjectName,
-                    $SecondaryObjectCoalition: log.SecondaryObjectCoalition,
-                    $SecondaryObjectPilot: log.SecondaryObjectPilot,
-                    $SecondaryObjectRegistration: log.SecondaryObjectRegistration,
-                    $SecondaryObjectSquawk: log.SecondaryObjectSquawk,
-                    $RelevantObjectID: log.RelevantObjectID,
-                    $RelevantObjectName: log.RelevantObjectName,
-                    $RelevantObjectCoalition: log.RelevantObjectCoalition,
-                    $RelevantObjectPilot: log.RelevantObjectPilot,
-                    $RelevantObjectRegistration: log.RelevantObjectRegistration,
-                    $RelevantObjectSquawk: log.RelevantObjectSquawk,
-                    $flightLogID: flightId
-                  });
-                }
-
-                //
-                // Delete the CSV file
-                //
-                if(CSVFileLocation) {
-                  fs.unlinkSync(CSVFileLocation);
-                }
-
-                //
-                // Enable UI
-                //
-                disableUI(false);
-                console.log('Fired CSV import queries:', result.length);
-              })();
-            });
-          }).catch(function(error) {
-            console.log('Tacview was not ready, retrying in 5 seconds...', error);
-            setTimeout(() => {
-              execute(command, ['tacview', tacviewFileName]);
-              disableUI(true);
-            }, 5000);
-          })
-        })();
-      }
+            for (let i = 0; i < result.length; i++) {
+              const log = result[i];
+              database.run("INSERT INTO flightlogimports (mission_time, primary_object_id, primary_object_name, primary_object_coalition, primary_object_pilot, primary_object_registration, primary_object_squawk, event, occurences, secondary_object_id, secondary_object_name, secondary_object_coalition, secondary_object_pilot, secondary_object_registration, secondary_object_squawk, relevant_object_id, relevant_object_name, relevant_object_coalition, relevant_object_pilot, relevant_object_registration, relevant_object_squawk, flightlog_id) VALUES ($missionTime, $primaryObjectID, $primaryObjectName, $PrimaryObjectCoalition, $PrimaryObjectPilot, $PrimaryObjectRegistration, $PrimaryObjectSquawk, $Event, $Occurences, $SecondaryObjectID, $SecondaryObjectName, $SecondaryObjectCoalition, $SecondaryObjectPilot, $SecondaryObjectRegistration, $SecondaryObjectSquawk, $RelevantObjectID, $RelevantObjectName, $RelevantObjectCoalition, $RelevantObjectPilot, $RelevantObjectRegistration, $RelevantObjectSquawk, $flightLogID)", {
+                $missionTime: log.missionTime,
+                $primaryObjectID: log.primaryObjectID,
+                $primaryObjectName: log.primaryObjectName,
+                $PrimaryObjectCoalition: log.PrimaryObjectCoalition,
+                $PrimaryObjectPilot: log.PrimaryObjectPilot,
+                $PrimaryObjectRegistration: log.PrimaryObjectRegistration,
+                $PrimaryObjectSquawk: log.PrimaryObjectSquawk,
+                $Event: log.Event,
+                $Occurences: log.Occurences,
+                $SecondaryObjectID: log.SecondaryObjectID,
+                $SecondaryObjectName: log.SecondaryObjectName,
+                $SecondaryObjectCoalition: log.SecondaryObjectCoalition,
+                $SecondaryObjectPilot: log.SecondaryObjectPilot,
+                $SecondaryObjectRegistration: log.SecondaryObjectRegistration,
+                $SecondaryObjectSquawk: log.SecondaryObjectSquawk,
+                $RelevantObjectID: log.RelevantObjectID,
+                $RelevantObjectName: log.RelevantObjectName,
+                $RelevantObjectCoalition: log.RelevantObjectCoalition,
+                $RelevantObjectPilot: log.RelevantObjectPilot,
+                $RelevantObjectRegistration: log.RelevantObjectRegistration,
+                $RelevantObjectSquawk: log.RelevantObjectSquawk,
+                $flightLogID: flightId
+              });
+            }
+            fs.unlinkSync(rootPath + '\\' + tacviewFileName + '.csv');
+            disableUI(false);
+            console.log('Fired CSV import queries:', result.length);
+          });
+        })
+        .catch((error) => {
+          console.log('Tacview was not ready, retrying in 5 seconds...', error);
+          setTimeout(() => {
+            execute(command, ['tacview', tacviewFileName]);
+            disableUI(true);
+          }, 5000);
+        });
     }
   });
 };
