@@ -222,21 +222,21 @@ async function loadFlightLogs(refresh, initial) {
       const [server] = await ipcRenderer.invoke('getServerList', `SELECT name FROM multiplayerservers WHERE id=${serverId} LIMIT 1`);
       const serverName = server ? server.name : 'Not set';
 
-      const importDate = formatDate(log.import_date);
-      const flightDate = formatDate(log.flight_date);
+      const importDate = formatDateFlightLog(log.import_date);
+      const flightDate = formatDateFlightLog(log.flight_date);
 
       const flightLogsTableRow = document.createElement("tr");
       flightLogsTable.appendChild(flightLogsTableRow).setAttribute('id', 'row-' + log.id);
 
-      appendTableCell(flightLogsTableRow, log.id);
-      appendTableCell(flightLogsTableRow, log.filename);
-      appendTableCell(flightLogsTableRow, serverName);
-      appendTableCell(flightLogsTableRow, locationName);
-      appendTableCell(flightLogsTableRow, importDate);
-      appendTableCell(flightLogsTableRow, flightDate);
+      appendTableCellFlightLog(flightLogsTableRow, log.id);
+      appendTableCellFlightLog(flightLogsTableRow, log.filename);
+      appendTableCellFlightLog(flightLogsTableRow, serverName);
+      appendTableCellFlightLog(flightLogsTableRow, locationName);
+      appendTableCellFlightLog(flightLogsTableRow, importDate);
+      appendTableCellFlightLog(flightLogsTableRow, flightDate);
 
-      const editButton = createButton(`rowEdit-${log.id}`, "btn btn-secondary edit", "Edit", "bi bi-pen");
-      const deleteButton = createButton(`rowDelete-${log.id}`, "btn btn-danger delete", "Delete", "bi bi-trash");
+      const editButton = createButtonFlightLog(`rowEdit-${log.id}`, "btn btn-secondary edit", "Edit", "bi bi-pen");
+      const deleteButton = createButtonFlightLog(`rowDelete-${log.id}`, "btn btn-danger delete", "Delete", "bi bi-trash");
 
       flightLogsTableRow.appendChild(document.createElement("td")).appendChild(editButton);
       flightLogsTableRow.appendChild(document.createElement("td")).appendChild(deleteButton);
@@ -263,7 +263,7 @@ async function loadFlightLogs(refresh, initial) {
   }
 }
 
-function formatDate(date) {
+function formatDateFlightLog(date) {
   const formattedDate = new Date(date);
   const year = formattedDate.getFullYear();
   const month = ('0' + (formattedDate.getMonth() + 1)).slice(-2);
@@ -273,12 +273,12 @@ function formatDate(date) {
   return `${year}-${month}-${day} @ ${hours}:${minutes}`;
 }
 
-function appendTableCell(row, content) {
+function appendTableCellFlightLog(row, content) {
   const cell = row.appendChild(document.createElement("td")).appendChild(document.createElement("div"));
   cell.innerHTML = content;
 }
 
-function createButton(id, className, label, iconClass) {
+function createButtonFlightLog(id, className, label, iconClass) {
   const button = document.createElement("button");
   button.type = "button";
   button.id = id;
