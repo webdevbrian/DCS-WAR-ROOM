@@ -257,80 +257,42 @@ let selectedLocation;
     }
   });
 
-  //
-  // Populate tracked pilots dropdown
-  //
-  const trackedPilotData = await ipcRenderer.invoke('getPilots', 'SELECT * FROM pilotdata');
-  const pilotSelectEl = document.querySelector('#pilotSelect');
-
-  if(trackedPilotData.length < 1) {
-    const pilotSelectedOption = document.createElement('option');
-    const selectName = document.createTextNode('No pilots added!');
-    pilotSelectedOption.appendChild(selectName);
-    pilotSelectedOption.setAttribute('value',`69`);
-    pilotSelectEl.appendChild(pilotSelectedOption);
+// Function to populate dropdown
+const populateDropdown = async (data, selectEl, defaultValueText) => {
+  if (data.length < 1) {
+    const option = document.createElement('option');
+    option.textContent = defaultValueText;
+    option.value = '69';
+    selectEl.appendChild(option);
   } else {
-    for(let i = 0; i < trackedPilotData.length; i++) {
-      const pilotSelectedOption = document.createElement('option');
-      const selectName = document.createTextNode(trackedPilotData[i].trackby);
-      pilotSelectedOption.appendChild(selectName);
-      pilotSelectedOption.setAttribute('value',`${trackedPilotData[i].id}`);
-      pilotSelectEl.appendChild(pilotSelectedOption);
-    };
+    for (const item of data) {
+      const option = document.createElement('option');
+      option.textContent = item.name || item.trackby || item.prettyname;
+      option.value = item.id;
+      selectEl.appendChild(option);
+    }
   }
+};
 
-  //
-  // Populate servers dropdown
-  //
-  const serverData = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers');
-  let serverSelectedOption = '';
-  const serverSelectEl = document.querySelector('#serverSelect');
+// Populate tracked pilots dropdown
+const trackedPilotData = await ipcRenderer.invoke('getPilots', 'SELECT * FROM pilotdata');
+const pilotSelectEl = document.querySelector('#pilotSelect');
+populateDropdown(trackedPilotData, pilotSelectEl, 'No pilots added!');
 
-  if(serverData.length < 1) {
-    const serverSelectedOption = document.createElement('option');
-    const selectName = document.createTextNode('No servers added!');
-    serverSelectedOption.appendChild(selectName);
-    serverSelectedOption.setAttribute('value',`69`);
-    serverSelectEl.appendChild(serverSelectedOption);
-  } else {
-    for(let i = 0; i < serverData.length; i++) {
-      const serverSelectedOption = document.createElement('option');
-      const selectName = document.createTextNode(serverData[i].name);
-      serverSelectedOption.appendChild(selectName);
-      serverSelectedOption.setAttribute('value',`${serverData[i].id}`);
-      serverSelectEl.appendChild(serverSelectedOption);
-    };
-  }
+// Populate servers dropdown
+const serverData = await ipcRenderer.invoke('getServerList', 'SELECT * FROM multiplayerservers');
+const serverSelectEl = document.querySelector('#serverSelect');
+populateDropdown(serverData, serverSelectEl, 'No servers added!');
 
-  //
-  // Populate locations dropdown
-  //
-  const locationData = await ipcRenderer.invoke('getLocations', 'SELECT * FROM locations');
-  let locationSelectedOption = '';
-  const locationSelectEl = document.querySelector('#locationSelect')
+// Populate locations dropdown
+const locationData = await ipcRenderer.invoke('getLocations', 'SELECT * FROM locations');
+const locationSelectEl = document.querySelector('#locationSelect');
+populateDropdown(locationData, locationSelectEl, '');
 
-  for(let i = 0; i < locationData.length; i++) {
-    const locationSelectedOption = document.createElement('option');
-    const selectName = document.createTextNode(locationData[i].name);
-    locationSelectedOption.appendChild(selectName);
-    locationSelectedOption.setAttribute('value',`${locationData[i].id}`);
-    locationSelectEl.appendChild(locationSelectedOption);
-  }
-
-  //
-  // Populate events dropdown
-  //
-  // const eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events');
-  // let eventSelectedOption = '';
-  // const eventSelectEl = document.querySelector('#eventSelect')
-
-  // for(let i = 0; i < eventData.length; i++) {
-  //   const eventSelectedOption = document.createElement('option');
-  //   const selectName = document.createTextNode(eventData[i].prettyname);
-  //   eventSelectedOption.appendChild(selectName);
-  //   eventSelectedOption.setAttribute('value',`${eventData[i].name}`);
-  //   eventSelectEl.appendChild(eventSelectedOption);
-  // }
+// Populate events dropdown
+// const eventData = await ipcRenderer.invoke('getEvents', 'SELECT * FROM events');
+// const eventSelectEl = document.querySelector('#eventSelect');
+// populateDropdown(eventData, eventSelectEl, '');
 
   document.querySelector("#search").addEventListener(
     "click",
