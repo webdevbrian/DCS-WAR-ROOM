@@ -105,7 +105,7 @@ const initIpc = () => {
   ipcMain.handle('addFlightLog', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('addFlightLog update Done');
+      console.log('addFlightLog Done');
 
       const lastFlightLog = await handleDatabaseRequest('getFlightLog', 'SELECT * FROM flightlogs ORDER BY id DESC LIMIT 1;');
       return lastFlightLog;
@@ -117,8 +117,9 @@ const initIpc = () => {
   ipcMain.handle('addPilot', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('addPilot update Done');
-      return data;
+      console.log('addPilot Done');
+      const lastAddedPilot = await handleDatabaseRequest('getPilots', 'SELECT * FROM pilotdata ORDER BY id DESC LIMIT 1;');
+      return lastAddedPilot;
     } catch (error) {
       return [];
     }
@@ -127,7 +128,7 @@ const initIpc = () => {
   ipcMain.handle('flightlogs', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('flightlogs update Done');
+      console.log('flightlogs');
       return data;
     } catch (error) {
       return [];
@@ -137,7 +138,7 @@ const initIpc = () => {
   ipcMain.handle('updateTacview', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('updateTacview update Done');
+      console.log('updateTacview');
       return data;
     } catch (error) {
       return [];
@@ -147,7 +148,7 @@ const initIpc = () => {
   ipcMain.handle('getPilots', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('getPilots update Done');
+      console.log('getPilots');
       return data;
     } catch (error) {
       return [];
@@ -157,7 +158,7 @@ const initIpc = () => {
   ipcMain.handle('getFlightLog', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('getPilots update Done');
+      console.log('getFlightLog ');
       return data;
     } catch (error) {
       return [];
@@ -167,8 +168,8 @@ const initIpc = () => {
   ipcMain.on('deletePilot', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('Closed the database connection (Server Delete).');
-      event.reply('serverDeleted', data);
+      console.log('Closed the database connection (Pilot Delete).');
+      event.reply('deletePilot', data);
     } catch (error) {
       console.error(`Error With Server delete db query: ${error}`);
     }
@@ -177,8 +178,8 @@ const initIpc = () => {
   ipcMain.on('deleteFlight', async (event, arg) => {
     try {
       const data = await handleDatabaseRequest(event, arg);
-      console.log('Closed the database connection (Server Delete).');
-      event.reply('serverDeleted', data);
+      console.log('Closed the database connection (Flight Delete).');
+      event.reply('deleteFlight', data);
     } catch (error) {
       console.error(`Error With Server delete db query: ${error}`);
     }

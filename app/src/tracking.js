@@ -22,10 +22,6 @@ let deletePilotModal = function(tableRowID) {
   processingModal.show();
 };
 
-ipcRenderer.on("pilotDelete", () => {
-// TODO: make all ipcRenderers promises using `await ipcRenderer.invoke`
-});
-
 document.addEventListener("click", function(e){
   let target = e.target.closest("#deletePilotConfirm");
 
@@ -109,10 +105,6 @@ document.addEventListener("click", function(e){
 
 })();
 
-//
-// Handle the SQLite database import here
-// After successful import delete the old CSV file for cleanup
-//
 let addPilot = function(pilot) {
   (async () => {
 
@@ -125,6 +117,8 @@ let addPilot = function(pilot) {
     //
     const pilotData = await ipcRenderer.invoke('addPilot', 'INSERT INTO pilotdata (ident1, trackby, date_added) VALUES("' + pilot[0] + '", "' + pilot[1] + '", "' + pilot[2] + '");');
     const pilotLog = pilotData[0];
+
+    console.log(pilotLog);
 
     //
     // Add Row to UI (add to top of table as table is ordered DESC sort)
