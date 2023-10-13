@@ -54,6 +54,7 @@ const handleDatabaseRequest = async (event, sql) => {
 };
 
 const initIpc = () => {
+  // TODO: Change these to run off of one main ipc call and switch between the types.
   ipcMain.on('need-app-path', (event) => {
     event.reply('app-path', app.getAppPath());
   });
